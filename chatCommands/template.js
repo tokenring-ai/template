@@ -1,8 +1,8 @@
-import ChatService from "@token-ring/chat/ChatService";
-import { HumanInterfaceService } from "@token-ring/chat";
-import TemplateRegistry from "../TemplateRegistry.js";
-import runChat from "@token-ring/ai-client/runChat.js";
 import ChatMessageStorage from "@token-ring/ai-client/ChatMessageStorage";
+import runChat from "@token-ring/ai-client/runChat.js";
+import { HumanInterfaceService } from "@token-ring/chat";
+import ChatService from "@token-ring/chat/ChatService";
+import TemplateRegistry from "../TemplateRegistry.js";
 
 export const description = "/template - Run prompt templates";
 
