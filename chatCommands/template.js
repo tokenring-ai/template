@@ -8,7 +8,7 @@ export const description = "/template - Run prompt templates";
 
 export async function execute(remainder, registry) {
 	const chatService = registry.requireFirstServiceByType(ChatService);
-	const humanInterfaceService = registry.getFirstServiceByType(
+	const _humanInterfaceService = registry.getFirstServiceByType(
 		HumanInterfaceService,
 	);
 	const templateRegistry = registry.requireFirstServiceByType(TemplateRegistry);
@@ -145,7 +145,7 @@ async function runTemplate(args, chatService, templateRegistry, registry) {
 		}
 
 		// Run the chat with the generated request
-		const [output, response] = await runChat(chatRequest.request, registry);
+		const [_output, response] = await runChat(chatRequest.request, registry);
 
 		// Report token usage if available
 		if (response.usage) {
