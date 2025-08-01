@@ -116,7 +116,9 @@ async function runTemplate(args, chatService, templateRegistry, registry) {
 			const chatMessageStorage =
 				registry.requireFirstServiceByType(ChatMessageStorage);
 			chatMessageStorage.setCurrentMessage(null);
-			chatService.emit("reset");
+			if (chatRequest.resetContext !== "history") {
+				chatService.emit("reset");
+			}
 			chatService.systemLine("Reset chat context for template execution.");
 		}
 
