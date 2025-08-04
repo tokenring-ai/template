@@ -1,5 +1,3 @@
-import ChatMessageStorage from "@token-ring/ai-client/ChatMessageStorage";
-import runChat from "@token-ring/ai-client/runChat.js";
 import { HumanInterfaceService } from "@token-ring/chat";
 import ChatService from "@token-ring/chat/ChatService";
 import TemplateRegistry from "../TemplateRegistry.js";
@@ -88,12 +86,6 @@ async function runTemplate(args, chatService, templateRegistry, registry) {
 	}
 
 	const templateName = args[0];
-	const template = templateRegistry.get(templateName);
-
-	if (!template) {
-		chatService.systemLine(`Template not found: ${templateName}`);
-		return;
-	}
 
 	// Extract the input from the remaining arguments
 	const input = args.slice(1).join(" ");
@@ -103,83 +95,8 @@ async function runTemplate(args, chatService, templateRegistry, registry) {
 		return;
 	}
 
-	// Store original tool state for restoration
-	let originalTools = null;
-	let toolsChanged = false;
-
-	try {
-		// Execute the template function with the input
-		const chatRequest = await template(input);
-
-		// Check if the template wants to reset context
-		if (chatRequest.resetContext) {
-			const chatMessageStorage =
-				registry.requireFirstServiceByType(ChatMessageStorage);
-			chatMessageStorage.setCurrentMessage(null);
-			if (chatRequest.resetContext !== "history") {
-				chatService.emit("reset");
-			}
-			chatService.systemLine("Reset chat context for template execution.");
-		}
-
-		// Handle activeTools option - save current tools and set new ones
-		if (chatRequest.activeTools && Array.isArray(chatRequest.activeTools)) {
-			originalTools = registry.tools.getEnabledToolNames();
-
-			// Validate that all requested tools exist
-			const availableTools = registry.tools.getAvailableToolNames();
-			const invalidTools = chatRequest.activeTools.filter(
-				(tool) => !availableTools.includes(tool),
-			);
-
-			if (invalidTools.length > 0) {
-				chatService.errorLine(
-					`Template requested unknown tools: ${invalidTools.join(", ")}`,
-				);
-				return;
-			}
-
-			await registry.tools.setEnabledTools(...chatRequest.activeTools);
-			toolsChanged = true;
-			chatService.systemLine(
-				`Set active tools for template: ${chatRequest.activeTools.join(", ")}`,
-			);
-		}
-
-		// Run the chat with the generated request
-		const [_output, response] = await runChat(chatRequest.request, registry);
-
-		// Report token usage if available
-		if (response.usage) {
-			const { promptTokens, completionTokens, totalTokens, cost } =
-				response.usage;
-			chatService.systemLine(
-				`[Template Complete] Token usage - promptTokens: ${promptTokens}, completionTokens: ${completionTokens}, totalTokens: ${totalTokens}, cost: ${cost}`,
-			);
-			if (response.timing) {
-				const { elapsedMs, tokensPerSec } = response.timing;
-				const seconds = (elapsedMs / 1000).toFixed(2);
-				const tps =
-					tokensPerSec !== undefined ? tokensPerSec.toFixed(2) : "N/A";
-				chatService.systemLine(
-					`[Template Complete] Time: ${seconds}s, Throughput: ${tps} tokens/sec`,
-				);
-			}
-		} else {
-			chatService.systemLine("[Template Complete] Unknown token usage");
-		}
-	} catch (error) {
-		chatService.emit("doneWaiting");
-		chatService.errorLine(`Error running template:`, error);
-	} finally {
-		// Restore original tools if they were changed
-		if (toolsChanged && originalTools !== null) {
-			await registry.tools.setEnabledTools(...originalTools);
-			chatService.systemLine(
-				`Restored original tools: ${originalTools.join(", ") || "none"}`,
-			);
-		}
-	}
+	// Use the TemplateRegistry's runTemplate method
+	await templateRegistry.runTemplate({ templateName, input }, registry);
 }
 
 export function help() {

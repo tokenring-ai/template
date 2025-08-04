@@ -55,7 +55,48 @@ export async function createCompanyHistoryArticle(prompt) {
   temperature: 0.3
  };
 }
+
+export async function translateThenSummarize(prompt) {
+ return {
+  system: "You are a French translator. Translate the following text to French.",
+  user: prompt,
+  nextTemplate: "summarize" // This will run the "summarize" template after translation
+ };
+}
+
+export async function summarize(prompt) {
+ return {
+  system: "You are a summarization expert. Create a concise summary of the following text.",
+  user: prompt
+ };
+}
 ```
+
+---
+
+## Template Chaining Feature
+
+Templates can specify another template to run after they complete by including a `nextTemplate` property in their return object. This enables creating template chains for multi-step processing.
+
+### How Template Chaining Works
+
+1. A template includes a `nextTemplate` property in its return object, specifying the name of the next template to run.
+2. After the first template completes, the system automatically runs the specified next template.
+3. The output of the first template is passed as input to the next template.
+4. Results from all templates in the chain are combined in the final response.
+
+### Example Use Cases
+
+- Translation followed by summarization
+- Data extraction followed by formatting
+- Content generation followed by review/editing
+- Multi-step analysis workflows
+
+### Implementation Details
+
+- Circular references are detected and prevented
+- Each template in the chain receives the output of the previous template as its input
+- The final result includes the outputs from all templates in the chain
 
 ---
 
@@ -67,6 +108,7 @@ export async function createCompanyHistoryArticle(prompt) {
     - Input string is extracted from remaining command text.
     - Template function is retrieved from registry using templateName.
     - Template function is executed with provided input.
+    - If the template specifies a `nextTemplate`, that template is run next with the output of the first template.
     - Resulting ChatRequest is dispatched to ai-client.
     - Response from AI is displayed in chat.
 
