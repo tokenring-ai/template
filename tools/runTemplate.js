@@ -54,11 +54,10 @@ export async function execute({ templateName, input }, registry) {
 
 	try {
 		// Use the TemplateRegistry's runTemplate method
-		const result = await templateRegistry.runTemplate(
+		return await templateRegistry.runTemplate(
 			{ templateName, input },
 			registry,
 		);
-		return result;
 	} catch (err) {
 		return {
 			ok: false,
