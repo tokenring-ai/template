@@ -1,2 +1,2 @@
-export * as runTemplate from "./tools/runTemplate.js";
-export * as listTemplates from "./tools/listTemplates.js";
+export * as runTemplate from "./tools/runTemplate.ts";
+export * as listTemplates from "./tools/listTemplates.ts";

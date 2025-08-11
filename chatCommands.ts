@@ -1,1 +1,1 @@
-export * as template from "./chatCommands/template.js";
+export * as template from "./chatCommands/template.ts";

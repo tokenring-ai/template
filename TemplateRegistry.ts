@@ -1,6 +1,6 @@
 import { Service } from "@token-ring/registry";
 import ChatMessageStorage from "@token-ring/ai-client/ChatMessageStorage";
-import runChat from "@token-ring/ai-client/runChat.js";
+import { runChat } from "@token-ring/ai-client";
 import ChatService from "@token-ring/chat/ChatService";
 
 export type TemplateChatRequest = {
@@ -163,9 +163,10 @@ export default class TemplateRegistry extends Service {
       // Report token usage if available
       let usageInfo: any = {};
       if (response.usage) {
-        const { promptTokens, completionTokens, totalTokens, cost } = response.usage;
+        const { promptTokens, completionTokens, totalTokens } = response.usage as any;
+        const cost = (response as any).tokenCost;
         chatService.systemLine(
-          `[Template Complete] Token usage - promptTokens: ${promptTokens}, completionTokens: ${completionTokens}, totalTokens: ${totalTokens}, cost: ${cost}`,
+          `[Template Complete] Token usage - promptTokens: ${promptTokens}, completionTokens: ${completionTokens}, totalTokens: ${totalTokens}, cost: ${cost ?? "N/A"}`,
         );
 
         usageInfo.usage = response.usage;

@@ -3,7 +3,7 @@
 	"version": "0.1.0",
 	"description": "Template package for TokenRing Writer",
 	"type": "module",
-	"main": "index.js",
+	"main": "index.ts",
 	"scripts": {
 		"test": "echo \"Error: no test specified\" && exit 1"
 	},

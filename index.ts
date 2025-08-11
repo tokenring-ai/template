@@ -1,3 +1,3 @@
-export * as chatCommands from "./chatCommands.js";
-export * as tools from "./tools.js";
-export { default as TemplateRegistry } from "./TemplateRegistry.js";
+export * as chatCommands from "./chatCommands.ts";
+export * as tools from "./tools.ts";
+export { default as TemplateRegistry } from "./TemplateRegistry.ts";

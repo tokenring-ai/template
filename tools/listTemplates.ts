@@ -1,4 +1,4 @@
-import TemplateRegistry from "../TemplateRegistry.js";
+import TemplateRegistry from "../TemplateRegistry.ts";
 import { z } from "zod";
 
 /**

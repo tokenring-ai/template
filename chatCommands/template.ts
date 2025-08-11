@@ -1,6 +1,6 @@
 import { HumanInterfaceService } from "@token-ring/chat";
 import ChatService from "@token-ring/chat/ChatService";
-import TemplateRegistry from "../TemplateRegistry.js";
+import TemplateRegistry from "../TemplateRegistry.ts";
 
 export const description = "/template - Run prompt templates";
 

@@ -1,6 +1,6 @@
 import ChatService from "@token-ring/chat/ChatService";
 import { z } from "zod";
-import TemplateRegistry from "../TemplateRegistry.js";
+import TemplateRegistry from "../TemplateRegistry.ts";
 
 /**
  * Runs a template with the given input via the tool interface
