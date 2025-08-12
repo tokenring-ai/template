@@ -1,10 +1,11 @@
 import { HumanInterfaceService } from "@token-ring/chat";
 import ChatService from "@token-ring/chat/ChatService";
 import TemplateRegistry from "../TemplateRegistry.ts";
+import {Registry} from "@token-ring/registry";
 
 export const description = "/template - Run prompt templates";
 
-export async function execute(remainder: string, registry: any) {
+export async function execute(remainder: string, registry: Registry) {
   const chatService: ChatService = registry.requireFirstServiceByType(ChatService);
   const _humanInterfaceService = registry.getFirstServiceByType(
     HumanInterfaceService,
@@ -41,7 +42,7 @@ function showHelp(chatService: ChatService) {
   chatService.systemLine("Template Command Usage:");
   chatService.systemLine("  /template list - List all available templates");
   chatService.systemLine(
-    "  /template run <templateName> <input> - Run a template with the given input",
+    "  /template run <templateName> [input] - Run a template with optional input",
   );
   chatService.systemLine(
     "  /template info <templateName> - Show information about a template",
@@ -62,7 +63,7 @@ function listTemplates(chatService: ChatService, templateRegistry: TemplateRegis
   });
 }
 
-function showTemplateInfo(templateName: string, chatService: ChatService, templateRegistry: TemplateRegistry) {
+function showTemplateInfo(templateName: string | undefined, chatService: ChatService, templateRegistry: TemplateRegistry) {
   if (!templateName) {
     chatService.systemLine("Please provide a template name.");
     return;
@@ -83,10 +84,10 @@ async function runTemplate(
   args: string[],
   chatService: ChatService,
   templateRegistry: TemplateRegistry,
-  registry: any,
+  registry: Registry,
 ) {
   if (!args || args.length < 1) {
-    chatService.systemLine("Please provide a template name and input.");
+    chatService.systemLine("Please provide a template name.");
     return;
   }
 
@@ -95,21 +96,16 @@ async function runTemplate(
   // Extract the input from the remaining arguments
   const input = args.slice(1).join(" ");
 
-  if (!input) {
-    chatService.systemLine("Please provide input for the template.");
-    return;
-  }
-
   // Use the TemplateRegistry's runTemplate method
-  await templateRegistry.runTemplate({ templateName, input }, registry);
+  await templateRegistry.runTemplate({ templateName, input: input || "" }, registry);
 }
 
 export function help() {
   return [
     "/template list",
     "  - Lists all available templates",
-    "/template run <templateName> <input>",
-    "  - Runs the specified template with the given input",
+    "/template run <templateName> [input]",
+    "  - Runs the specified template with optional input",
     "/template info <templateName>",
     "  - Shows information about a specific template",
   ];

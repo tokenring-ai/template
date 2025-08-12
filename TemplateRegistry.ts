@@ -1,11 +1,16 @@
-import { Service } from "@token-ring/registry";
+import {Registry, Service} from "@token-ring/registry";
 import ChatMessageStorage from "@token-ring/ai-client/ChatMessageStorage";
-import { runChat } from "@token-ring/ai-client";
+import { execute as runChat } from "@token-ring/ai-client/runChat";
 import ChatService from "@token-ring/chat/ChatService";
+import {ChatInputMessage} from "@token-ring/ai-client/client/AIChatClient";
 
 export type TemplateChatRequest = {
   // Request object to pass to runChat
-  request: any;
+  request: {
+      input: ChatInputMessage[] | ChatInputMessage | string;
+      systemPrompt?: ChatInputMessage | string;
+      model: string;
+  };
   // Name of the next template to run, if any
   nextTemplate?: string;
   // Whether to reset context; if string, special handling for "history"
@@ -91,7 +96,7 @@ export default class TemplateRegistry extends Service {
   async runTemplate(
     { templateName, input, visitedTemplates = [] as string[] }:
       { templateName: string; input: string; visitedTemplates?: string[] },
-    registry: any,
+    registry: Registry,
   ): Promise<any> {
     const chatService: ChatService = registry.requireFirstServiceByType(ChatService);
 
@@ -107,11 +112,6 @@ export default class TemplateRegistry extends Service {
       return { error: `Template not found: ${templateName}` };
     }
 
-    if (!input) {
-      chatService.systemLine("Input is required for the template");
-      return { error: "Input is required for the template" };
-    }
-
     // Store original tool state for restoration
     let originalTools: string[] | null = null;
     let toolsChanged = false;
@@ -121,23 +121,23 @@ export default class TemplateRegistry extends Service {
       const chatRequest = await template(input);
 
       // Check if the template wants to reset context
-      if ((chatRequest as any).resetContext) {
+      if (chatRequest.resetContext) {
         const chatMessageStorage: ChatMessageStorage =
           registry.requireFirstServiceByType(ChatMessageStorage);
-        chatMessageStorage.setCurrentMessage(null as any);
-        if ((chatRequest as any).resetContext !== "history") {
-          (chatService as any).emit("reset");
+        chatMessageStorage.setCurrentMessage(null);
+        if (chatRequest.resetContext !== "history") {
+          chatService.emit("reset", null);
         }
         chatService.systemLine("Reset chat context for template execution.");
       }
 
       // Handle activeTools option - save current tools and set new ones
-      if ((chatRequest as any).activeTools && Array.isArray((chatRequest as any).activeTools)) {
+      if (chatRequest.activeTools && Array.isArray(chatRequest.activeTools)) {
         originalTools = registry.tools.getEnabledToolNames();
 
         // Validate that all requested tools exist
         const availableTools: string[] = registry.tools.getAvailableToolNames();
-        const invalidTools = (chatRequest as any).activeTools.filter(
+        const invalidTools = chatRequest.activeTools.filter(
           (tool: string) => !availableTools.includes(tool),
         );
 
@@ -150,21 +150,20 @@ export default class TemplateRegistry extends Service {
           };
         }
 
-        await registry.tools.setEnabledTools(...(chatRequest as any).activeTools);
+        await registry.tools.setEnabledTools(...chatRequest.activeTools);
         toolsChanged = true;
         chatService.systemLine(
-          `Set active tools for template: ${(chatRequest as any).activeTools.join(", ")}`,
+          `Set active tools for template: ${chatRequest.activeTools.join(", ")}`,
         );
       }
 
       // Run the chat with the generated request
-      const [output, response] = await runChat((chatRequest as any).request, registry);
+      const [output, response] = await runChat(chatRequest.request, registry);
 
       // Report token usage if available
       let usageInfo: any = {};
       if (response.usage) {
-        const { promptTokens, completionTokens, totalTokens } = response.usage as any;
-        const cost = (response as any).tokenCost;
+        const { promptTokens, completionTokens, totalTokens, cost } = response.usage ;
         chatService.systemLine(
           `[Template Complete] Token usage - promptTokens: ${promptTokens}, completionTokens: ${completionTokens}, totalTokens: ${totalTokens}, cost: ${cost ?? "N/A"}`,
         );
@@ -194,27 +193,27 @@ export default class TemplateRegistry extends Service {
       };
 
       // Check if the template wants to run another template next
-      if ((chatRequest as any).nextTemplate) {
+      if (chatRequest.nextTemplate) {
         // Prevent circular references
-        if (visitedTemplates.includes((chatRequest as any).nextTemplate)) {
+        if (visitedTemplates.includes(chatRequest.nextTemplate)) {
           chatService.errorLine(
-            `Circular template reference detected: ${(chatRequest as any).nextTemplate} has already been run in this chain.`,
+            `Circular template reference detected: ${chatRequest.nextTemplate} has already been run in this chain.`,
           );
           return {
             ...result,
-            error: `Circular template reference detected: ${(chatRequest as any).nextTemplate}`,
+            error: `Circular template reference detected: ${chatRequest.nextTemplate}`,
           };
         }
 
         // Log that we're running the next template
         chatService.systemLine(
-          `Running next template: ${(chatRequest as any).nextTemplate}`,
+          `Running next template: ${chatRequest.nextTemplate}`,
         );
 
         // Run the next template with the output of this template as input
         const nextTemplateResult = await this.runTemplate(
           {
-            templateName: (chatRequest as any).nextTemplate,
+            templateName: chatRequest.nextTemplate,
             input: output,
             visitedTemplates: [...visitedTemplates, templateName],
           },
@@ -230,7 +229,7 @@ export default class TemplateRegistry extends Service {
 
       return result;
     } catch (error: any) {
-      (chatService as any).emit("doneWaiting");
+      chatService.emit("doneWaiting", null);
       chatService.errorLine(`Error running template:`, error);
       return {
         ok: false,

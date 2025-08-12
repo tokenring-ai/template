@@ -1,13 +1,12 @@
 import TemplateRegistry from "../TemplateRegistry.ts";
 import { z } from "zod";
+import {Registry} from "@token-ring/registry";
 
 /**
  * Lists all available templates via the tool interface
  */
-export default execute;
-export async function execute(
-  {}: Record<string, never>,
-  registry: any,
+export async function execute({},
+  registry: Registry,
 ): Promise<{
   ok: boolean;
   templates: string[];
