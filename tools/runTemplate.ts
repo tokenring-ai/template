@@ -1,55 +1,44 @@
 import ChatService from "@token-ring/chat/ChatService";
+import {Registry} from "@token-ring/registry";
 import {z} from "zod";
 import TemplateRegistry from "../TemplateRegistry.ts";
-import {Registry} from "@token-ring/registry";
+
+export const name = "template/run";
 
 /**
  * Runs a template with the given input via the tool interface
  */
 export async function execute(
-    {templateName, input}: { templateName?: string; input?: string },
-    registry: Registry,
+  {templateName, input}: { templateName?: string; input?: string },
+  registry: Registry,
 ): Promise<{
-    ok: boolean;
-    output?: string;
-    response?: any;
-    usage?: any;
-    timing?: any;
-    error?: string;
+  ok: boolean;
+  output?: string;
+  response?: any;
+  usage?: any;
+  timing?: any;
+  error?: string;
 }> {
-    const chatService: ChatService = registry.requireFirstServiceByType(ChatService);
-    const templateRegistry: TemplateRegistry =
-        registry.requireFirstServiceByType(TemplateRegistry);
+  const chatService: ChatService = registry.requireFirstServiceByType(ChatService);
+  const templateRegistry: TemplateRegistry =
+    registry.requireFirstServiceByType(TemplateRegistry);
 
-    chatService.infoLine(`[runTemplate] Running template: ${templateName}`);
-    if (!templateName) {
-        return {
-            ok: false,
-            error: "Template name is required",
-        };
-    }
-    if (!input) {
-        return {
-            ok: false,
-            error: "Input is required",
-        }
-    }
+  chatService.infoLine(`[${name}] Running template: ${templateName}`);
+  if (!templateName) {
+    throw new Error("Template name is required");
+  }
+  if (!input) {
+    throw new Error("Input is required");
+  }
 
-    try {
-        // Use the TemplateRegistry's runTemplate method
-        return await templateRegistry.runTemplate({templateName, input}, registry);
-    } catch (err: any) {
-        return {
-            ok: false,
-            error: err?.message || "Unknown error running template",
-        };
-    }
+
+  return await templateRegistry.runTemplate({templateName, input}, registry);
 }
 
 export const description =
-    "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.";
+  "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.";
 
-export const parameters = z.object({
-    templateName: z.string().describe("The name of the template to run."),
-    input: z.string().describe("The input to pass to the template."),
+export const inputSchema = z.object({
+  templateName: z.string().describe("The name of the template to run."),
+  input: z.string().describe("The input to pass to the template."),
 });

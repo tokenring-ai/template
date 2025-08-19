@@ -1,15 +1,12 @@
-import { HumanInterfaceService } from "@token-ring/chat";
+import {HumanInterfaceService} from "@token-ring/chat";
 import ChatService from "@token-ring/chat/ChatService";
-import TemplateRegistry from "../TemplateRegistry.ts";
 import {Registry} from "@token-ring/registry";
+import TemplateRegistry from "../TemplateRegistry.ts";
 
 export const description = "/template - Run prompt templates";
 
 export async function execute(remainder: string, registry: Registry) {
   const chatService: ChatService = registry.requireFirstServiceByType(ChatService);
-  const _humanInterfaceService = registry.getFirstServiceByType(
-    HumanInterfaceService,
-  );
   const templateRegistry: TemplateRegistry = registry.requireFirstServiceByType(TemplateRegistry);
 
   // Parse the command
@@ -97,7 +94,7 @@ async function runTemplate(
   const input = args.slice(1).join(" ");
 
   // Use the TemplateRegistry's runTemplate method
-  await templateRegistry.runTemplate({ templateName, input: input || "" }, registry);
+  await templateRegistry.runTemplate({templateName, input: input || ""}, registry);
 }
 
 export function help() {

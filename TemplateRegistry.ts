@@ -1,15 +1,16 @@
-import {Registry, Service} from "@token-ring/registry";
 import ChatMessageStorage from "@token-ring/ai-client/ChatMessageStorage";
-import { execute as runChat } from "@token-ring/ai-client/runChat";
-import ChatService from "@token-ring/chat/ChatService";
 import {ChatInputMessage} from "@token-ring/ai-client/client/AIChatClient";
+import {execute as runChat} from "@token-ring/ai-client/runChat";
+import {outputChatAnalytics} from "@token-ring/ai-client/util/outputChatAnalytics";
+import ChatService from "@token-ring/chat/ChatService";
+import {Registry, Service} from "@token-ring/registry";
 
 export type TemplateChatRequest = {
   // Request object to pass to runChat
   request: {
-      input: ChatInputMessage[] | ChatInputMessage | string;
-      systemPrompt?: ChatInputMessage | string;
-      model: string;
+    input: ChatInputMessage[] | ChatInputMessage | string;
+    systemPrompt?: ChatInputMessage | string;
+    model: string;
   };
   // Name of the next template to run, if any
   nextTemplate?: string;
@@ -18,6 +19,14 @@ export type TemplateChatRequest = {
   // Tools to enable during this template execution
   activeTools?: string[];
 };
+
+export type TemplateResult = {
+  ok: boolean;
+  output?: string;
+  response?: any;
+  error?: string;
+  nextTemplateResult?: TemplateResult;
+}
 
 export type TemplateFunction = (input: string) => Promise<TemplateChatRequest>;
 
@@ -94,22 +103,20 @@ export default class TemplateRegistry extends Service {
    * Run a template with the given input
    */
   async runTemplate(
-    { templateName, input, visitedTemplates = [] as string[] }:
-      { templateName: string; input: string; visitedTemplates?: string[] },
+    {templateName, input, visitedTemplates = [] as string[]}:
+    { templateName: string; input: string; visitedTemplates?: string[] },
     registry: Registry,
-  ): Promise<any> {
+  ): Promise<TemplateResult> {
     const chatService: ChatService = registry.requireFirstServiceByType(ChatService);
 
     if (!templateName) {
-      chatService.systemLine("Template name is required");
-      return { error: "Template name is required" };
+      throw new Error("Template name is required");
     }
 
     const template = this.get(templateName);
 
     if (!template) {
-      chatService.systemLine(`Template not found: ${templateName}`);
-      return { error: `Template not found: ${templateName}` };
+      throw new Error(`Template not found: ${templateName}`);
     }
 
     // Store original tool state for restoration
@@ -142,12 +149,7 @@ export default class TemplateRegistry extends Service {
         );
 
         if (invalidTools.length > 0) {
-          chatService.errorLine(
-            `Template requested unknown tools: ${invalidTools.join(", ")}`,
-          );
-          return {
-            error: `Template requested unknown tools: ${invalidTools.join(", ")}`,
-          };
+          throw new Error(`Template requested unknown tools: ${invalidTools.join(", ")}`);
         }
 
         await registry.tools.setEnabledTools(...chatRequest.activeTools);
@@ -158,51 +160,23 @@ export default class TemplateRegistry extends Service {
       }
 
       // Run the chat with the generated request
-      const [output, response] = await runChat(chatRequest.request, registry);
+      const [templateOutput, response] = await runChat(chatRequest.request, registry);
 
-      // Report token usage if available
-      let usageInfo: any = {};
-      if (response.usage) {
-        const { promptTokens, completionTokens, totalTokens, cost } = response.usage ;
-        chatService.systemLine(
-          `[Template Complete] Token usage - promptTokens: ${promptTokens}, completionTokens: ${completionTokens}, totalTokens: ${totalTokens}, cost: ${cost ?? "N/A"}`,
-        );
 
-        usageInfo.usage = response.usage;
-
-        if (response.timing) {
-          const { elapsedMs, tokensPerSec } = response.timing;
-          const seconds = (elapsedMs / 1000).toFixed(2);
-          const tps = tokensPerSec !== undefined ? tokensPerSec.toFixed(2) : "N/A";
-          chatService.systemLine(
-            `[Template Complete] Time: ${seconds}s, Throughput: ${tps} tokens/sec`,
-          );
-
-          usageInfo.timing = response.timing;
-        }
-      } else {
-        chatService.systemLine("[Template Complete] Unknown token usage");
-      }
+      outputChatAnalytics(response, chatService, templateName);
 
       // Prepare the result object
-      const result: any = {
+      const result: TemplateResult = {
         ok: true,
-        output,
-        response,
-        ...usageInfo,
+        output: templateOutput,
+        response
       };
 
       // Check if the template wants to run another template next
       if (chatRequest.nextTemplate) {
         // Prevent circular references
         if (visitedTemplates.includes(chatRequest.nextTemplate)) {
-          chatService.errorLine(
-            `Circular template reference detected: ${chatRequest.nextTemplate} has already been run in this chain.`,
-          );
-          return {
-            ...result,
-            error: `Circular template reference detected: ${chatRequest.nextTemplate}`,
-          };
+          throw new Error(`Circular template reference detected: ${chatRequest.nextTemplate} has already been run in this chain.`);
         }
 
         // Log that we're running the next template
@@ -214,7 +188,7 @@ export default class TemplateRegistry extends Service {
         const nextTemplateResult = await this.runTemplate(
           {
             templateName: chatRequest.nextTemplate,
-            input: output,
+            input: templateOutput,
             visitedTemplates: [...visitedTemplates, templateName],
           },
           registry,
@@ -228,13 +202,6 @@ export default class TemplateRegistry extends Service {
       }
 
       return result;
-    } catch (error: any) {
-      chatService.emit("doneWaiting", null);
-      chatService.errorLine(`Error running template:`, error);
-      return {
-        ok: false,
-        error: error?.message || "Unknown error running template",
-      };
     } finally {
       // Restore original tools if they were changed
       if (toolsChanged && originalTools !== null) {

@@ -1,6 +1,7 @@
 # Template Package
 
-The Template package provides functionality for running reusable AI-powered prompt templates by name. This allows users to accelerate repetitive tasks such as translation, drafting, and summarization.
+The Template package provides functionality for running reusable AI-powered prompt templates by name. This allows users
+to accelerate repetitive tasks such as translation, drafting, and summarization.
 
 ## Features
 
@@ -29,7 +30,8 @@ The package provides the following chat commands:
 
 ## Creating Templates
 
-Templates are JavaScript functions that accept an input string and return a chat request object. The chat request object should include at least a `system` prompt and a `user` message.
+Templates are JavaScript functions that accept an input string and return a chat request object. The chat request object
+should include at least a `system` prompt and a `user` message.
 
 ### Template Structure
 
@@ -59,12 +61,12 @@ To use templates in your application, add them to your configuration file:
 ```javascript
 // writer-config.js
 export default {
-  // ... other configuration
-  templates: {
-    translateToFrench: (await import("../../templates/translateToFrench.js")).translateToFrench,
-    createCompanyHistoryArticle: (await import("../../templates/createCompanyHistoryArticle.js")).createCompanyHistoryArticle,
-    // Add your custom templates here
-  }
+ // ... other configuration
+ templates: {
+  translateToFrench: (await import("../../templates/translateToFrench.js")).translateToFrench,
+  createCompanyHistoryArticle: (await import("../../templates/createCompanyHistoryArticle.js")).createCompanyHistoryArticle,
+  // Add your custom templates here
+ }
 };
 ```
 
@@ -77,6 +79,7 @@ The Template package consists of:
 - Example templates - Ready-to-use template functions
 
 The `TemplateRegistry` stores templates using a Map and provides CRUD operations:
+
 - `register(name, template)` - Registers a template function
 - `unregister(name)` - Unregisters a template
 - `get(name)` - Gets a template function by name
