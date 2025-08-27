@@ -14,8 +14,10 @@ export type TemplateChatRequest = {
   };
   // Name of the next template to run, if any
   nextTemplate?: string;
-  // Whether to reset context; if string, special handling for "history"
-  resetContext?: boolean | "history";
+
+  // Whether to reset context; if true
+  reset?: ("chat" | "state")[];
+
   // Tools to enable during this template execution
   activeTools?: string[];
 };
@@ -128,14 +130,21 @@ export default class TemplateRegistry extends Service {
       const chatRequest = await template(input);
 
       // Check if the template wants to reset context
-      if (chatRequest.resetContext) {
+      if (chatRequest.reset) {
         const chatMessageStorage: ChatMessageStorage =
           registry.requireFirstServiceByType(ChatMessageStorage);
-        chatMessageStorage.setCurrentMessage(null);
-        if (chatRequest.resetContext !== "history") {
-          chatService.emit("reset", null);
+        for (const item of chatRequest.reset) {
+          if (item === "chat") {
+            chatMessageStorage.setCurrentMessage(null);
+            chatService.emit("reset", "chat");
+            chatService.systemLine("Reset chat history for template execution.");
+          } else if (item === "state") {
+            chatService.emit("reset", "state");
+            chatService.systemLine("Reset chat state for template execution.");
+          } else {
+            throw new Error(`Invalid reset item: ${item}`);
+          }``
         }
-        chatService.systemLine("Reset chat context for template execution.");
       }
 
       // Handle activeTools option - save current tools and set new ones
