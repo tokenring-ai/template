@@ -1,5 +1,4 @@
-import ChatService from "@token-ring/chat/ChatService";
-import {Registry} from "@token-ring/registry";
+import Agent from "@tokenring-ai/agent/Agent";
 import {z} from "zod";
 import TemplateRegistry from "../TemplateRegistry.ts";
 
@@ -10,7 +9,7 @@ export const name = "template/run";
  */
 export async function execute(
   {templateName, input}: { templateName?: string; input?: string },
-  registry: Registry,
+  agent: Agent,
 ): Promise<{
   ok: boolean;
   output?: string;
@@ -19,11 +18,10 @@ export async function execute(
   timing?: any;
   error?: string;
 }> {
-  const chatService: ChatService = registry.requireFirstServiceByType(ChatService);
   const templateRegistry: TemplateRegistry =
-    registry.requireFirstServiceByType(TemplateRegistry);
+    agent.requireFirstServiceByType(TemplateRegistry);
 
-  chatService.infoLine(`[${name}] Running template: ${templateName}`);
+  agent.infoLine(`[${name}] Running template: ${templateName}`);
   if (!templateName) {
     throw new Error("Template name is required");
   }
@@ -32,7 +30,7 @@ export async function execute(
   }
 
 
-  return await templateRegistry.runTemplate({templateName, input}, registry);
+  return await templateRegistry.runTemplate({templateName, input}, agent);
 }
 
 export const description =

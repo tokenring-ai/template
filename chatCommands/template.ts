@@ -1,89 +1,86 @@
-import ChatService from "@token-ring/chat/ChatService";
-import {Registry} from "@token-ring/registry";
+import Agent from "@tokenring-ai/agent/Agent";
 import TemplateRegistry from "../TemplateRegistry.ts";
 
 export const description = "/template - Run prompt templates";
 
-export async function execute(remainder: string, registry: Registry) {
-  const chatService: ChatService = registry.requireFirstServiceByType(ChatService);
-  const templateRegistry: TemplateRegistry = registry.requireFirstServiceByType(TemplateRegistry);
+export async function execute(remainder: string, agent: Agent) {
+  const templateRegistry: TemplateRegistry = agent.requireFirstServiceByType(TemplateRegistry);
 
   // Parse the command
   const args = remainder?.trim().split(/\s+/);
   const subCommand = args?.[0]?.toLowerCase();
 
   if (!subCommand) {
-    showHelp(chatService);
+    showHelp(agent);
     return;
   }
 
   switch (subCommand) {
     case "list":
-      listTemplates(chatService, templateRegistry);
+      listTemplates(templateRegistry, agent);
       break;
     case "run":
-      await runTemplate(args.slice(1), chatService, templateRegistry, registry);
+      await runTemplate(args.slice(1), templateRegistry, agent);
       break;
     case "info":
-      showTemplateInfo(args[1], chatService, templateRegistry);
+      showTemplateInfo(args[1],templateRegistry, agent);
       break;
     default:
-      chatService.systemLine(`Unknown subcommand: ${subCommand}`);
-      showHelp(chatService);
+      agent.systemMessage(`Unknown subcommand: ${subCommand}`);
+      showHelp(agent);
       break;
   }
 }
 
-function showHelp(chatService: ChatService) {
-  chatService.systemLine("Template Command Usage:");
-  chatService.systemLine("  /template list - List all available templates");
-  chatService.systemLine(
+function showHelp(agent: Agent) {
+  agent.systemMessage("Template Command Usage:");
+  agent.systemMessage("  /template list - List all available templates");
+  agent.systemMessage(
     "  /template run <templateName> [input] - Run a template with optional input",
   );
-  chatService.systemLine(
+  agent.systemMessage(
     "  /template info <templateName> - Show information about a template",
   );
 }
 
-function listTemplates(chatService: ChatService, templateRegistry: TemplateRegistry) {
+function listTemplates(templateRegistry: TemplateRegistry, agent: Agent) {
   const templates = templateRegistry.list();
 
   if (templates.length === 0) {
-    chatService.systemLine("No templates available.");
+    agent.systemMessage("No templates available.");
     return;
   }
 
-  chatService.systemLine("Available templates:");
+  agent.systemMessage("Available templates:");
   templates.forEach((name) => {
-    chatService.systemLine(`  - ${name}`);
+    agent.systemMessage(`  - ${name}`);
   });
 }
 
-function showTemplateInfo(templateName: string | undefined, chatService: ChatService, templateRegistry: TemplateRegistry) {
+function showTemplateInfo(templateName: string | undefined, templateRegistry: TemplateRegistry, agent: Agent) {
   if (!templateName) {
-    chatService.systemLine("Please provide a template name.");
+    agent.systemMessage("Please provide a template name.");
     return;
   }
 
   const template = templateRegistry.get(templateName);
   if (!template) {
-    chatService.systemLine(`Template not found: ${templateName}`);
+    agent.systemMessage(`Template not found: ${templateName}`);
     return;
   }
 
-  chatService.systemLine(`Template: ${templateName}`);
-  chatService.systemLine("Usage:");
-  chatService.systemLine(`  /template run ${templateName} <input>`);
+  agent.systemMessage(`Template: ${templateName}`);
+  agent.systemMessage("Usage:");
+  agent.systemMessage(`  /template run ${templateName} <input>`);
 }
 
 async function runTemplate(
   args: string[],
-  chatService: ChatService,
   templateRegistry: TemplateRegistry,
-  registry: Registry,
+  agent: Agent,
 ) {
   if (!args || args.length < 1) {
-    chatService.systemLine("Please provide a template name.");
+    agent.systemMessage("Please provide a template name.");
     return;
   }
 
@@ -93,7 +90,7 @@ async function runTemplate(
   const input = args.slice(1).join(" ");
 
   // Use the TemplateRegistry's runTemplate method
-  await templateRegistry.runTemplate({templateName, input: input || ""}, registry);
+  await templateRegistry.runTemplate({templateName, input: input || ""}, agent);
 }
 
 export function help() {

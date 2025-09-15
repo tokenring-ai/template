@@ -1,5 +1,5 @@
 {
- "name": "@token-ring/template",
+ "name": "@tokenring-ai/template",
  "version": "0.1.0",
  "description": "Template package for TokenRing Writer",
  "type": "module",
@@ -15,8 +15,8 @@
  "author": "TokenRing",
  "license": "MIT",
  "dependencies": {
-  "@token-ring/registry": "workspace:*",
-  "@token-ring/chat": "workspace:*",
-  "@token-ring/ai-client": "workspace:*"
+  "@tokenring-ai/registry": "workspace:*",
+  "@tokenring-ai/agent": "workspace:*",
+  "@tokenring-ai/ai-client": "workspace:*"
  }
 }

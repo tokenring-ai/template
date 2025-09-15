@@ -1,4 +1,4 @@
-import {Registry} from "@token-ring/registry";
+import {Agent} from "@tokenring-ai/agent";
 import {z} from "zod";
 import TemplateRegistry from "../TemplateRegistry.ts";
 
@@ -7,15 +7,13 @@ export const name = "template/list";
 /**
  * Lists all available templates via the tool interface
  */
-export async function execute({},
-                              registry: Registry,
-): Promise<{
+export async function execute({}, agent: Agent): Promise<{
   ok: boolean;
   templates: string[];
   error?: string;
 }> {
   const templateRegistry: TemplateRegistry =
-    registry.requireFirstServiceByType(TemplateRegistry);
+    agent.requireFirstServiceByType(TemplateRegistry);
 
   // Get the list of templates
   const templates = templateRegistry.list();

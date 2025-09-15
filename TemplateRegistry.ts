@@ -1,9 +1,9 @@
-import ChatMessageStorage from "@token-ring/ai-client/ChatMessageStorage";
-import {ChatInputMessage} from "@token-ring/ai-client/client/AIChatClient";
-import {execute as runChat} from "@token-ring/ai-client/runChat";
-import {outputChatAnalytics} from "@token-ring/ai-client/util/outputChatAnalytics";
-import ChatService from "@token-ring/chat/ChatService";
-import {Registry, Service} from "@token-ring/registry";
+import {Agent} from "@tokenring-ai/agent";
+import {ResetWhat} from "@tokenring-ai/agent/AgentEvents";
+import {TokenRingService} from "@tokenring-ai/agent/types";
+import {ChatInputMessage} from "@tokenring-ai/ai-client/client/AIChatClient";
+import runChat from "@tokenring-ai/ai-client/runChat";
+import {outputChatAnalytics} from "@tokenring-ai/ai-client/util/outputChatAnalytics";
 
 export type TemplateChatRequest = {
   // Request object to pass to runChat
@@ -16,7 +16,7 @@ export type TemplateChatRequest = {
   nextTemplate?: string;
 
   // Whether to reset context; if true
-  reset?: ("chat" | "state")[];
+  reset?: ResetWhat[];
 
   // Tools to enable during this template execution
   activeTools?: string[];
@@ -36,7 +36,7 @@ export type TemplateFunction = (input: string) => Promise<TemplateChatRequest>;
  * Registry for prompt templates
  * Stores and manages template functions that can be used to generate chat requests
  */
-export default class TemplateRegistry extends Service {
+export default class TemplateRegistry implements TokenRingService {
   name = "TemplateRegistry";
   description = "Provides a registry of prompt templates";
 
@@ -107,9 +107,8 @@ export default class TemplateRegistry extends Service {
   async runTemplate(
     {templateName, input, visitedTemplates = [] as string[]}:
     { templateName: string; input: string; visitedTemplates?: string[] },
-    registry: Registry,
+    agent: Agent,
   ): Promise<TemplateResult> {
-    const chatService: ChatService = registry.requireFirstServiceByType(ChatService);
 
     if (!templateName) {
       throw new Error("Template name is required");
@@ -131,28 +130,16 @@ export default class TemplateRegistry extends Service {
 
       // Check if the template wants to reset context
       if (chatRequest.reset) {
-        const chatMessageStorage: ChatMessageStorage =
-          registry.requireFirstServiceByType(ChatMessageStorage);
-        for (const item of chatRequest.reset) {
-          if (item === "chat") {
-            chatMessageStorage.setCurrentMessage(null);
-            chatService.emit("reset", "chat");
-            chatService.systemLine("Reset chat history for template execution.");
-          } else if (item === "state") {
-            chatService.emit("reset", "state");
-            chatService.systemLine("Reset chat state for template execution.");
-          } else {
-            throw new Error(`Invalid reset item: ${item}`);
-          }``
-        }
+        agent.systemMessage(`Resetting ${chatRequest.reset.join(",")} context for template: ${templateName}`);
+        agent.reset(chatRequest.reset);
       }
 
       // Handle activeTools option - save current tools and set new ones
       if (chatRequest.activeTools && Array.isArray(chatRequest.activeTools)) {
-        originalTools = registry.tools.getEnabledToolNames();
+        originalTools = agent.tools.getAllItemNames();
 
         // Validate that all requested tools exist
-        const availableTools: string[] = registry.tools.getAvailableToolNames();
+        const availableTools: string[] = agent.tools.getAllItemNames()
         const invalidTools = chatRequest.activeTools.filter(
           (tool: string) => !availableTools.includes(tool),
         );
@@ -161,18 +148,18 @@ export default class TemplateRegistry extends Service {
           throw new Error(`Template requested unknown tools: ${invalidTools.join(", ")}`);
         }
 
-        await registry.tools.setEnabledTools(...chatRequest.activeTools);
+        agent.tools.setEnabledItems(chatRequest.activeTools);
         toolsChanged = true;
-        chatService.systemLine(
+        agent.systemMessage(
           `Set active tools for template: ${chatRequest.activeTools.join(", ")}`,
         );
       }
 
       // Run the chat with the generated request
-      const [templateOutput, response] = await runChat(chatRequest.request, registry);
+      const [templateOutput, response] = await runChat(chatRequest.request, agent);
 
 
-      outputChatAnalytics(response, chatService, templateName);
+      outputChatAnalytics(response, agent, templateName);
 
       // Prepare the result object
       const result: TemplateResult = {
@@ -189,7 +176,7 @@ export default class TemplateRegistry extends Service {
         }
 
         // Log that we're running the next template
-        chatService.systemLine(
+        agent.systemMessage(
           `Running next template: ${chatRequest.nextTemplate}`,
         );
 
@@ -200,7 +187,7 @@ export default class TemplateRegistry extends Service {
             input: templateOutput,
             visitedTemplates: [...visitedTemplates, templateName],
           },
-          registry,
+          agent,
         );
 
         // Return combined results
@@ -214,8 +201,8 @@ export default class TemplateRegistry extends Service {
     } finally {
       // Restore original tools if they were changed
       if (toolsChanged && originalTools !== null) {
-        await registry.tools.setEnabledTools(...originalTools);
-        chatService.systemLine(
+        agent.tools.setEnabledItems(originalTools);
+        agent.systemMessage(
           `Restored original tools: ${originalTools.join(", ") || "none"}`,
         );
       }
