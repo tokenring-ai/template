@@ -1,10 +1,10 @@
 import Agent from "@tokenring-ai/agent/Agent";
-import TemplateRegistry from "../TemplateRegistry.ts";
+import TemplateService from "../TemplateService.ts";
 
 export const description = "/template - Run prompt templates";
 
 export async function execute(remainder: string, agent: Agent) {
-  const templateRegistry: TemplateRegistry = agent.requireFirstServiceByType(TemplateRegistry);
+  const templateRegistry: TemplateService = agent.requireServiceByType(TemplateService);
 
   // Parse the command
   const args = remainder?.trim().split(/\s+/);
@@ -43,8 +43,8 @@ function showHelp(agent: Agent) {
   );
 }
 
-function listTemplates(templateRegistry: TemplateRegistry, agent: Agent) {
-  const templates = templateRegistry.list();
+function listTemplates(templateRegistry: TemplateService, agent: Agent) {
+  const templates = templateRegistry.listTemplates();
 
   if (templates.length === 0) {
     agent.systemMessage("No templates available.");
@@ -57,13 +57,13 @@ function listTemplates(templateRegistry: TemplateRegistry, agent: Agent) {
   });
 }
 
-function showTemplateInfo(templateName: string | undefined, templateRegistry: TemplateRegistry, agent: Agent) {
+function showTemplateInfo(templateName: string | undefined, templateRegistry: TemplateService, agent: Agent) {
   if (!templateName) {
     agent.systemMessage("Please provide a template name.");
     return;
   }
 
-  const template = templateRegistry.get(templateName);
+  const template = templateRegistry.getTemplateByName(templateName);
   if (!template) {
     agent.systemMessage(`Template not found: ${templateName}`);
     return;
@@ -76,7 +76,7 @@ function showTemplateInfo(templateName: string | undefined, templateRegistry: Te
 
 async function runTemplate(
   args: string[],
-  templateRegistry: TemplateRegistry,
+  templateRegistry: TemplateService,
   agent: Agent,
 ) {
   if (!args || args.length < 1) {

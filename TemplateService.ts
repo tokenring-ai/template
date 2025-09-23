@@ -4,6 +4,7 @@ import {TokenRingService} from "@tokenring-ai/agent/types";
 import {ChatInputMessage} from "@tokenring-ai/ai-client/client/AIChatClient";
 import runChat from "@tokenring-ai/ai-client/runChat";
 import {outputChatAnalytics} from "@tokenring-ai/ai-client/util/outputChatAnalytics";
+import KeyedRegistry from "@tokenring-ai/utility/KeyedRegistry";
 
 export type TemplateChatRequest = {
   // Request object to pass to runChat
@@ -32,73 +33,26 @@ export type TemplateResult = {
 
 export type TemplateFunction = (input: string) => Promise<TemplateChatRequest>;
 
+export type TemplateServiceOptions = Record<string, TemplateFunction>;
+
 /**
  * Registry for prompt templates
  * Stores and manages template functions that can be used to generate chat requests
  */
-export default class TemplateRegistry implements TokenRingService {
-  name = "TemplateRegistry";
+export default class TemplateService implements TokenRingService {
+  name = "TemplateService";
   description = "Provides a registry of prompt templates";
 
   /**
    * Map of template names to template functions
    */
-  templates: Map<string, TemplateFunction> = new Map();
+  templates = new KeyedRegistry<TemplateFunction>();
+  getTemplateByName = this.templates.getItemByName;
+  listTemplates = this.templates.getAllItemNames;
 
-  /**
-   * Register a template function with a name
-   * @param name - The name of the template
-   * @param template - The template function
-   */
-  register(name: string, template: TemplateFunction) {
-    if (typeof template !== "function") {
-      throw new Error(`Template must be a function, got ${typeof template}`);
-    }
-    this.templates.set(name, template);
-  }
 
-  /**
-   * Unregister a template by name
-   * @param name - The name of the template to unregister
-   * @returns True if the template was unregistered, false if it wasn't found
-   */
-  unregister(name: string): boolean {
-    return this.templates.delete(name);
-  }
-
-  /**
-   * Get a template function by name
-   * @param name - The name of the template
-   * @returns The template function, or undefined if not found
-   */
-  get(name: string): TemplateFunction | undefined {
-    return this.templates.get(name);
-  }
-
-  /**
-   * List all registered template names
-   * @returns Array of template names
-   */
-  list(): string[] {
-    return Array.from(this.templates.keys());
-  }
-
-  /**
-   * Load templates from an object
-   * @param templates - Object mapping template names to template functions
-   */
-  loadTemplates(templates: Record<string, TemplateFunction> | undefined | null) {
-    if (!templates || typeof templates !== "object") {
-      return;
-    }
-
-    for (const [name, template] of Object.entries(templates)) {
-      try {
-        this.register(name, template);
-      } catch (err: any) {
-        console.error(`Error registering template '${name}':`, err?.message || err);
-      }
-    }
+  constructor(templates: TemplateServiceOptions) {
+    this.templates.registerAll(templates);
   }
 
   /**
@@ -114,7 +68,7 @@ export default class TemplateRegistry implements TokenRingService {
       throw new Error("Template name is required");
     }
 
-    const template = this.get(templateName);
+    const template = this.templates.getItemByName(templateName);
 
     if (!template) {
       throw new Error(`Template not found: ${templateName}`);

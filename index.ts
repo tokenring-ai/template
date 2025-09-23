@@ -1,7 +1,7 @@
 import {TokenRingPackage} from "@tokenring-ai/agent";
-import packageJSON from './package.json' with {type: 'json'};
 
 import * as chatCommands from "./chatCommands.ts";
+import packageJSON from './package.json' with {type: 'json'};
 import * as tools from "./tools.ts";
 
 export const packageInfo: TokenRingPackage = {
@@ -11,3 +11,5 @@ export const packageInfo: TokenRingPackage = {
   chatCommands,
   tools
 };
+
+export {default as TemplateService} from "./TemplateService.ts";

@@ -15,8 +15,7 @@
  "author": "TokenRing",
  "license": "MIT",
  "dependencies": {
-  "@tokenring-ai/registry": "workspace:*",
-  "@tokenring-ai/agent": "workspace:*",
-  "@tokenring-ai/ai-client": "workspace:*"
+  "@tokenring-ai/agent": "^0.1.0",
+  "@tokenring-ai/ai-client": "^0.1.0"
  }
 }

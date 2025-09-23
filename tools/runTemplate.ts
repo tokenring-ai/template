@@ -1,6 +1,6 @@
 import Agent from "@tokenring-ai/agent/Agent";
 import {z} from "zod";
-import TemplateRegistry from "../TemplateRegistry.ts";
+import TemplateService from "../TemplateService.ts";
 
 export const name = "template/run";
 
@@ -18,8 +18,8 @@ export async function execute(
   timing?: any;
   error?: string;
 }> {
-  const templateRegistry: TemplateRegistry =
-    agent.requireFirstServiceByType(TemplateRegistry);
+  const templateRegistry: TemplateService =
+    agent.requireServiceByType(TemplateService);
 
   agent.infoLine(`[${name}] Running template: ${templateName}`);
   if (!templateName) {

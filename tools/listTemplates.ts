@@ -1,6 +1,6 @@
 import {Agent} from "@tokenring-ai/agent";
 import {z} from "zod";
-import TemplateRegistry from "../TemplateRegistry.ts";
+import TemplateService from "../TemplateService.ts";
 
 export const name = "template/list";
 
@@ -12,11 +12,11 @@ export async function execute({}, agent: Agent): Promise<{
   templates: string[];
   error?: string;
 }> {
-  const templateRegistry: TemplateRegistry =
-    agent.requireFirstServiceByType(TemplateRegistry);
+  const templateRegistry: TemplateService =
+    agent.requireServiceByType(TemplateService);
 
   // Get the list of templates
-  const templates = templateRegistry.list();
+  const templates = templateRegistry.listTemplates();
 
   return {
     ok: true,
