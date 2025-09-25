@@ -1,16 +1,14 @@
 import {Agent} from "@tokenring-ai/agent";
 import {ResetWhat} from "@tokenring-ai/agent/AgentEvents";
 import {TokenRingService} from "@tokenring-ai/agent/types";
-import {ChatInputMessage} from "@tokenring-ai/ai-client/client/AIChatClient";
+import { ChatRequestConfig } from "@tokenring-ai/ai-client/chatRequestBuilder/createChatRequest";
 import runChat from "@tokenring-ai/ai-client/runChat";
 import {outputChatAnalytics} from "@tokenring-ai/ai-client/util/outputChatAnalytics";
 import KeyedRegistry from "@tokenring-ai/utility/KeyedRegistry";
 
 export type TemplateChatRequest = {
   // Request object to pass to runChat
-  request: {
-    input: ChatInputMessage[] | ChatInputMessage | string;
-    systemPrompt?: ChatInputMessage | string;
+  request: ChatRequestConfig & {
     model: string;
   };
   // Name of the next template to run, if any
