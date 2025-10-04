@@ -1,34 +1,33 @@
 import {Agent} from "@tokenring-ai/agent";
 import {ResetWhat} from "@tokenring-ai/agent/AgentEvents";
 import {TokenRingService} from "@tokenring-ai/agent/types";
-import { ChatRequestConfig } from "@tokenring-ai/ai-client/chatRequestBuilder/createChatRequest";
+import {ChatRequestConfig} from "@tokenring-ai/ai-client/chatRequestBuilder/createChatRequest";
 import runChat from "@tokenring-ai/ai-client/runChat";
 import {outputChatAnalytics} from "@tokenring-ai/ai-client/util/outputChatAnalytics";
 import KeyedRegistry from "@tokenring-ai/utility/KeyedRegistry";
+import {z} from "zod";
 
-export type TemplateChatRequest = {
+export const TemplateChatRequestSchema = z.object({
   // Request object to pass to runChat
-  request: ChatRequestConfig & {
-    model: string;
-  };
+  request: z.custom<ChatRequestConfig>().and(z.object({model: z.string()})),
   // Name of the next template to run, if any
-  nextTemplate?: string;
-
+  nextTemplate: z.string().optional(),
   // Whether to reset context; if true
-  reset?: ResetWhat[];
-
+  reset: z.array(z.custom<ResetWhat>()).optional(),
   // Tools to enable during this template execution
-  activeTools?: string[];
-};
+  activeTools: z.array(z.string()).optional(),
+});
 
-export type TemplateResult = {
-  ok: boolean;
-  output?: string;
-  response?: any;
-  error?: string;
-  nextTemplateResult?: TemplateResult;
-}
+export const TemplateResultSchema = z.object({
+  ok: z.boolean(),
+  output: z.string().optional(),
+  response: z.any().optional(),
+  error: z.string().optional(),
+  nextTemplateResult: z.function().optional(),
+});
 
+export type TemplateChatRequest = z.infer<typeof TemplateChatRequestSchema>;
+export type TemplateResult = z.infer<typeof TemplateResultSchema>;
 export type TemplateFunction = (input: string) => Promise<TemplateChatRequest>;
 
 export type TemplateServiceOptions = Record<string, TemplateFunction>;
