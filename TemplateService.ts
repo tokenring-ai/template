@@ -18,16 +18,23 @@ export const TemplateChatRequestSchema = z.object({
   activeTools: z.array(z.string()).optional(),
 });
 
-export const TemplateResultSchema = z.object({
+export type TemplateResult = {
+  ok: boolean;
+  output?: string;
+  response?: any;
+  error?: string;
+  nextTemplateResult?: TemplateResult;
+};
+
+export const TemplateResultSchema: z.ZodType<TemplateResult> = z.object({
   ok: z.boolean(),
   output: z.string().optional(),
   response: z.any().optional(),
   error: z.string().optional(),
-  nextTemplateResult: z.function().optional(),
+  nextTemplateResult: z.lazy(() => TemplateResultSchema).optional(),
 });
 
 export type TemplateChatRequest = z.infer<typeof TemplateChatRequestSchema>;
-export type TemplateResult = z.infer<typeof TemplateResultSchema>;
 export type TemplateFunction = (input: string) => Promise<TemplateChatRequest>;
 
 export type TemplateServiceOptions = Record<string, TemplateFunction>;

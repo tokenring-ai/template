@@ -9,10 +9,7 @@ import * as tools from "./tools.ts";
 
 export const TemplateConfigSchema = z.record(
   z.string(),
-  z.function({
-    input: z.tuple([z.string()]),
-    output: z.promise(TemplateChatRequestSchema)
-  })
+  z.custom<(input: string) => Promise<z.infer<typeof TemplateChatRequestSchema>>>()
 ).optional();
 
 export const packageInfo: TokenRingPackage = {
