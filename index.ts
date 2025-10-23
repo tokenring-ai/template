@@ -12,19 +12,19 @@ export const TemplateConfigSchema = z.record(
   z.custom<(input: string) => Promise<z.infer<typeof TemplateChatRequestSchema>>>()
 ).optional();
 
-export const packageInfo: TokenRingPackage = {
+export default {
   name: packageJSON.name,
   version: packageJSON.version,
   description: packageJSON.description,
   install(agentTeam: AgentTeam) {
     const config = agentTeam.getConfigSlice('templates', TemplateConfigSchema);
     if (config) {
-      agentTeam.addTools(packageInfo, tools)
+    agentTeam.addTools(packageJSON.name, tools)
       agentTeam.addChatCommands(chatCommands);
 
       agentTeam.addServices(new TemplateService(config));
     }
   },
-};
+} as TokenRingPackage;
 
 export {default as TemplateService} from "./TemplateService.ts";
