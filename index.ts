@@ -1,4 +1,5 @@
-import {AgentTeam, TokenRingPackage} from "@tokenring-ai/agent";
+import {AgentCommandService, AgentTeam, TokenRingPackage} from "@tokenring-ai/agent";
+import {AIService} from "@tokenring-ai/ai-client";
 import {z} from "zod";
 
 import * as chatCommands from "./chatCommands.ts";
@@ -19,8 +20,12 @@ export default {
   install(agentTeam: AgentTeam) {
     const config = agentTeam.getConfigSlice('templates', TemplateConfigSchema);
     if (config) {
-    agentTeam.addTools(packageJSON.name, tools)
-      agentTeam.addChatCommands(chatCommands);
+      agentTeam.waitForService(AIService, aiService =>
+        aiService.addTools(packageJSON.name, tools)
+      );
+      agentTeam.waitForService(AgentCommandService, agentCommandService =>
+        agentCommandService.addAgentCommands(chatCommands)
+      );
 
       agentTeam.addServices(new TemplateService(config));
     }
