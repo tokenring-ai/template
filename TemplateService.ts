@@ -1,10 +1,10 @@
 import {Agent} from "@tokenring-ai/agent";
 import {ResetWhat} from "@tokenring-ai/agent/AgentEvents";
 import {TokenRingService} from "@tokenring-ai/agent/types";
-import {AIService} from "@tokenring-ai/ai-client";
-import {ChatRequestConfig} from "@tokenring-ai/ai-client/chatRequestBuilder/createChatRequest";
-import runChat from "@tokenring-ai/ai-client/runChat";
-import {outputChatAnalytics} from "@tokenring-ai/ai-client/util/outputChatAnalytics";
+import {ChatService} from "@tokenring-ai/chat";
+import { ChatRequestConfig } from "@tokenring-ai/chat/chatRequestBuilder/createChatRequest";
+import runChat from "@tokenring-ai/chat/runChat";
+import { outputChatAnalytics } from "@tokenring-ai/chat/util/outputChatAnalytics";
 import KeyedRegistry from "@tokenring-ai/utility/KeyedRegistry";
 import {z} from "zod";
 
@@ -80,7 +80,7 @@ export default class TemplateService implements TokenRingService {
     }
 
 
-    const aiService = agent.requireServiceByType(AIService);
+    const chatService = agent.requireServiceByType(ChatService);
 
     // Store original tool state for restoration
     let originalTools: string[] | null = null;
@@ -98,9 +98,9 @@ export default class TemplateService implements TokenRingService {
 
       // Handle activeTools option - save current tools and set new ones
       if (chatRequest.activeTools && Array.isArray(chatRequest.activeTools)) {
-        originalTools = aiService.getEnabledTools(agent);
+        originalTools = chatService.getEnabledTools(agent);
 
-        aiService.setEnabledTools(chatRequest.activeTools, agent);
+        chatService.setEnabledTools(chatRequest.activeTools, agent);
 
         toolsChanged = true;
         agent.systemMessage(
@@ -154,8 +154,8 @@ export default class TemplateService implements TokenRingService {
     } finally {
       // Restore original tools if they were changed
       if (toolsChanged && originalTools !== null) {
-        const aiService = agent.requireServiceByType(AIService);
-        aiService.setEnabledTools(originalTools, agent);
+        const chatService = agent.requireServiceByType(ChatService);
+        chatService.setEnabledTools(originalTools, agent);
         agent.systemMessage(
           `Restored original tools: ${originalTools.join(", ") || "none"}`,
         );
