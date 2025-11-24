@@ -1,11 +1,11 @@
 import {Agent} from "@tokenring-ai/agent";
 import {ResetWhat} from "@tokenring-ai/agent/AgentEvents";
-import {TokenRingService} from "@tokenring-ai/agent/types";
+import {TokenRingService} from "@tokenring-ai/app/types";
 import {ChatService} from "@tokenring-ai/chat";
 import { ChatRequestConfig } from "@tokenring-ai/chat/chatRequestBuilder/createChatRequest";
 import runChat from "@tokenring-ai/chat/runChat";
 import { outputChatAnalytics } from "@tokenring-ai/chat/util/outputChatAnalytics";
-import KeyedRegistry from "@tokenring-ai/utility/KeyedRegistry";
+import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import {z} from "zod";
 
 export const TemplateChatRequestSchema = z.object({

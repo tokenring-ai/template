@@ -1,4 +1,5 @@
-import {AgentCommandService, AgentTeam, TokenRingPackage} from "@tokenring-ai/agent";
+import {AgentCommandService} from "@tokenring-ai/agent";
+import TokenRingApp, { TokenRingPlugin } from "@tokenring-ai/app";
 import {ChatService} from "@tokenring-ai/chat";
 import {z} from "zod";
 
@@ -17,19 +18,19 @@ export default {
   name: packageJSON.name,
   version: packageJSON.version,
   description: packageJSON.description,
-  install(agentTeam: AgentTeam) {
-    const config = agentTeam.getConfigSlice('templates', TemplateConfigSchema);
+  install(app: TokenRingApp) {
+    const config = app.getConfigSlice('templates', TemplateConfigSchema);
     if (config) {
-      agentTeam.waitForService(ChatService, chatService =>
+      app.waitForService(ChatService, chatService =>
         chatService.addTools(packageJSON.name, tools)
       );
-      agentTeam.waitForService(AgentCommandService, agentCommandService =>
+      app.waitForService(AgentCommandService, agentCommandService =>
         agentCommandService.addAgentCommands(chatCommands)
       );
 
-      agentTeam.addServices(new TemplateService(config));
+      app.addServices(new TemplateService(config));
     }
   },
-} as TokenRingPackage;
+} as TokenRingPlugin;
 
 export {default as TemplateService} from "./TemplateService.ts";
