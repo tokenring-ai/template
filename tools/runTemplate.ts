@@ -1,14 +1,15 @@
 import Agent from "@tokenring-ai/agent/Agent";
+import {TokenRingToolDefinition} from "@tokenring-ai/chat/types";
 import {z} from "zod";
 import TemplateService from "../TemplateService.ts";
 
-export const name = "template/run";
+const name = "template/run";
 
 /**
  * Runs a template with the given input via the tool interface
  */
-export async function execute(
-  {templateName, input}: { templateName?: string; input?: string },
+async function execute(
+  {templateName, input}: z.infer<typeof inputSchema>,
   agent: Agent,
 ): Promise<{
   ok: boolean;
@@ -33,10 +34,14 @@ export async function execute(
   return await templateRegistry.runTemplate({templateName, input}, agent);
 }
 
-export const description =
+const description =
   "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.";
 
-export const inputSchema = z.object({
+const inputSchema = z.object({
   templateName: z.string().describe("The name of the template to run."),
   input: z.string().describe("The input to pass to the template."),
 });
+
+export default {
+  name, description, inputSchema, execute,
+} as TokenRingToolDefinition<typeof inputSchema>;

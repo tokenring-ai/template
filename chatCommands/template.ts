@@ -1,9 +1,10 @@
 import Agent from "@tokenring-ai/agent/Agent";
+import {TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import TemplateService from "../TemplateService.ts";
 
-export const description = "/template - Run prompt templates";
+const description = "/template - Run prompt templates";
 
-export async function execute(remainder: string, agent: Agent) {
+async function execute(remainder: string, agent: Agent) {
   const templateRegistry: TemplateService = agent.requireServiceByType(TemplateService);
 
   // Parse the command
@@ -93,7 +94,7 @@ async function runTemplate(
   await templateRegistry.runTemplate({templateName, input: input || ""}, agent);
 }
 
-export function help() {
+function help() {
   return [
     "/template list",
     "  - Lists all available templates",
@@ -103,3 +104,9 @@ export function help() {
     "  - Shows information about a specific template",
   ];
 }
+
+export default {
+  description,
+  execute,
+  help,
+} as TokenRingAgentCommand
