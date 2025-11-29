@@ -1,6 +1,6 @@
 {
  "name": "@tokenring-ai/template",
- "version": "0.1.0",
+ "version": "0.2.0",
  "description": "Template package for TokenRing Writer",
  "type": "module",
  "main": "index.ts",
@@ -15,8 +15,10 @@
  "author": "TokenRing",
  "license": "MIT",
  "dependencies": {
-  "@tokenring-ai/agent": "^0.1.0",
-  "@tokenring-ai/chat": "^0.1.0",
-  "@tokenring-ai/utility": "0.1.0"
+  "@tokenring-ai/app": "0.2.0",
+  "@tokenring-ai/agent": "0.2.0",
+  "@tokenring-ai/chat": "0.2.0",
+  "@tokenring-ai/utility": "0.2.0",
+  "zod": "^4.1.13"
  }
 }

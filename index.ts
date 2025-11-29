@@ -1,12 +1,12 @@
 import {AgentCommandService} from "@tokenring-ai/agent";
-import TokenRingApp, { TokenRingPlugin } from "@tokenring-ai/app";
+import TokenRingApp, {TokenRingPlugin} from "@tokenring-ai/app";
 import {ChatService} from "@tokenring-ai/chat";
 import {z} from "zod";
 
-import * as chatCommands from "./chatCommands.ts";
+import chatCommands from "./chatCommands.ts";
 import packageJSON from './package.json' with {type: 'json'};
 import TemplateService, {TemplateChatRequestSchema} from "./TemplateService.ts";
-import * as tools from "./tools.ts";
+import tools from "./tools.ts";
 
 
 export const TemplateConfigSchema = z.record(
