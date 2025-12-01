@@ -1,16 +1,15 @@
 import {Agent} from "@tokenring-ai/agent";
 import {ResetWhat} from "@tokenring-ai/agent/AgentEvents";
+import {AIResponse} from "@tokenring-ai/ai-client/client/AIChatClient";
 import {TokenRingService} from "@tokenring-ai/app/types";
 import {ChatService} from "@tokenring-ai/chat";
-import { ChatRequestConfig } from "@tokenring-ai/chat/chatRequestBuilder/createChatRequest";
 import runChat from "@tokenring-ai/chat/runChat";
 import { outputChatAnalytics } from "@tokenring-ai/chat/util/outputChatAnalytics";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import {z} from "zod";
 
 export const TemplateChatRequestSchema = z.object({
-  // Request object to pass to runChat
-  request: z.custom<ChatRequestConfig>().and(z.object({model: z.string()})),
+  inputs: z.array(z.string()),
   // Name of the next template to run, if any
   nextTemplate: z.string().optional(),
   // Whether to reset context; if true
@@ -108,17 +107,24 @@ export default class TemplateService implements TokenRingService {
         );
       }
 
-      // Run the chat with the generated request
-      const [templateOutput, response] = await runChat(chatRequest.request, agent);
 
+      const chatConfig = chatService.getChatConfig(agent);
 
-      outputChatAnalytics(response, agent, templateName);
+      let lastResult: [string, AIResponse] | null = null
+
+      for (const input of chatRequest.inputs ?? []) {
+        // Run the chat with the generated request
+        lastResult = await runChat(input, chatConfig, agent);
+
+        outputChatAnalytics(lastResult[1], agent, templateName);
+      }
+
 
       // Prepare the result object
       const result: TemplateResult = {
         ok: true,
-        output: templateOutput,
-        response
+        output: lastResult?.[0] ?? "No output from AI.",
+        response: lastResult?.[1] ?? "No response from AI.",
       };
 
       // Check if the template wants to run another template next
@@ -137,7 +143,7 @@ export default class TemplateService implements TokenRingService {
         const nextTemplateResult = await this.runTemplate(
           {
             templateName: chatRequest.nextTemplate,
-            input: templateOutput,
+            input: lastResult?.[0] ?? "No output from AI.",
             visitedTemplates: [...visitedTemplates, templateName],
           },
           agent,
