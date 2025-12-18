@@ -27,4 +27,4 @@ export default {
       app.addServices(new TemplateService(config));
     }
   },
-} as TokenRingPlugin;
+} satisfies TokenRingPlugin;
