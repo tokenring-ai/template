@@ -5,7 +5,10 @@
   "type": "module",
   "main": "index.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "vitest run",
+    "build": "tsc --noEmit",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage"
   },
   "keywords": [
     "tokenring",
@@ -21,5 +24,13 @@
     "@tokenring-ai/chat": "0.2.0",
     "@tokenring-ai/utility": "0.2.0",
     "zod": "catalog:"
+  },
+  "devDependencies": {
+    "vitest": "catalog:",
+    "typescript": "catalog:"
+  },
+  "exports": {
+    ".": "./index.ts",
+    "./*": "./*.ts"
   }
 }
