@@ -3,7 +3,7 @@ import {TokenRingToolDefinition} from "@tokenring-ai/chat/types";
 import {z} from "zod";
 import TemplateService from "../TemplateService.ts";
 
-const name = "template/run";
+const name = "template_run";
 
 /**
  * Runs a template with the given input via the tool interface

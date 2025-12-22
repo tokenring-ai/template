@@ -3,7 +3,7 @@ import {TokenRingToolDefinition} from "@tokenring-ai/chat/types";
 import {z} from "zod";
 import TemplateService from "../TemplateService.ts";
 
-const name = "template/list";
+const name = "template_list";
 
 /**
  * Lists all available templates via the tool interface
