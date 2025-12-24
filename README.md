@@ -11,6 +11,7 @@ The Template package provides a powerful registry system for running reusable AI
 - **Tool Integration**: Automatic tool and command registration with TokenRing applications
 - **Error Handling**: Comprehensive error handling with circular reference detection
 - **State Persistence**: Template execution preserves and restores agent tool states
+- **Command System**: Interactive chat commands (`/template`) for template management
 
 ## Installation
 
@@ -80,6 +81,18 @@ interface TemplateChatRequest {
 }
 ```
 
+### TemplateResult Schema
+
+```typescript
+interface TemplateResult {
+  ok: boolean;
+  output?: string;
+  response?: any;
+  error?: string;
+  nextTemplateResult?: TemplateResult; // For chained templates
+}
+```
+
 ## Usage Examples
 
 ### Basic Template Execution
@@ -126,6 +139,20 @@ export async function newTaskTemplate(input: string): Promise<TemplateChatReques
 }
 ```
 
+### Multiple Inputs
+
+```typescript
+export async function multiStepAnalysis(input: string): Promise<TemplateChatRequest> {
+  return {
+    inputs: [
+      "Analyze this data for trends",
+      "Identify key insights",
+      "Generate recommendations"
+    ],
+  };
+}
+```
+
 ## API Reference
 
 ### TemplateService Methods
@@ -162,7 +189,7 @@ The package provides two main tools:
 ### `template/list`
 Lists all available templates.
 
-**Parameters:** None
+**Parameters:** None  
 **Returns:** Array of template names
 
 ### `template/run`
@@ -284,48 +311,6 @@ const templateWithCircularRef = async (input: string) => ({
   inputs: [input],
   nextTemplate: "anotherTemplate", // This could create a circular reference
 });
-```
-
-## Advanced Features
-
-### Multiple Inputs
-Templates can process multiple inputs in sequence:
-
-```typescript
-export async function multiStepAnalysis(input: string): Promise<TemplateChatRequest> {
-  return {
-    inputs: [
-      "Analyze this data for trends",
-      "Identify key insights",
-      "Generate recommendations"
-    ],
-  };
-}
-```
-
-### Tool State Management
-Automatically manage which tools are active during template execution:
-
-```typescript
-export async function webOnlyResearch(input: string): Promise<TemplateChatRequest> {
-  return {
-    inputs: [input],
-    activeTools: ["websearch"], // Only enable web search
-    // Original tool state is automatically restored after execution
-  };
-}
-```
-
-### Context Reset
-Selectively reset different types of context:
-
-```typescript
-export async function newConversation(input: string): Promise<TemplateChatRequest> {
-  return {
-    inputs: [input],
-    reset: ["chat", "events"], // Start fresh but keep memory
-  };
-}
 ```
 
 ## Development
