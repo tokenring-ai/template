@@ -34,7 +34,7 @@ export default {
 The central service that manages template registration and execution:
 
 ```typescript
-import TemplateService from "@tokenring-ai/template";
+import { TemplateService } from "@tokenring-ai/template";
 
 // Access via agent
 const templateService = agent.requireServiceByType(TemplateService);
@@ -158,12 +158,15 @@ export async function multiStepAnalysis(input: string): Promise<TemplateChatRequ
 ### TemplateService Methods
 
 #### `listTemplates(): string[]`
+
 Returns an array of all registered template names.
 
 #### `getTemplateByName(name: string): TemplateFunction | undefined`
+
 Retrieves a template function by name.
 
 #### `runTemplate({ templateName, input, visitedTemplates? }, agent): Promise<TemplateResult>`
+
 Executes a template with the given input.
 
 **Parameters:**
@@ -187,12 +190,14 @@ interface TemplateResult {
 The package provides two main tools:
 
 ### `template/list`
+
 Lists all available templates.
 
 **Parameters:** None  
 **Returns:** Array of template names
 
 ### `template/run`
+
 Runs a template with the given input.
 
 **Parameters:**
@@ -206,6 +211,7 @@ Runs a template with the given input.
 The package provides the `/template` command with the following subcommands:
 
 ### `/template list`
+
 List all available templates.
 
 **Example:**
@@ -214,6 +220,7 @@ List all available templates.
 ```
 
 ### `/template run <templateName> [input]`
+
 Run a template with optional input.
 
 **Arguments:**
@@ -226,6 +233,7 @@ Run a template with optional input.
 ```
 
 ### `/template info <templateName>`
+
 Show information about a specific template.
 
 **Arguments:**
@@ -264,6 +272,7 @@ const config = {
 ## Integration with TokenRing Ecosystem
 
 ### Plugin Architecture
+
 The package automatically integrates with TokenRing applications via the plugin system:
 
 ```typescript
