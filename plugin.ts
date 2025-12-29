@@ -19,7 +19,6 @@ export default {
   version: packageJSON.version,
   description: packageJSON.description,
   install(app, config) {
-    // const config = app.getConfigSlice('templates', TemplateConfigSchema);
     if (config.template) {
       app.waitForService(ChatService, chatService =>
         chatService.addTools(packageJSON.name, tools)
