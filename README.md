@@ -189,14 +189,14 @@ interface TemplateResult {
 
 The package provides two main tools:
 
-### `template/list`
+### `template_list`
 
 Lists all available templates.
 
-**Parameters:** None  
+**Parameters:** None
 **Returns:** Array of template names
 
-### `template/run`
+### `template_run`
 
 Runs a template with the given input.
 
@@ -286,12 +286,8 @@ export default {
 }
 ```
 
-### Service Dependencies
-- **ChatService**: For chat execution and tool management
-- **AgentCommandService**: For command registration
-- **Agent**: For template execution context
-
 ### State Management
+
 - **Tool State**: Automatically preserved and restored during template execution
 - **Context**: Supports selective context reset via `reset` parameter
 - **Chain Tracking**: Prevents circular references in template chains
@@ -364,19 +360,6 @@ console.log(chatRequest.inputs); // ["test input"]
 console.log(chatRequest.nextTemplate); // undefined if no chaining
 ```
 
-## Dependencies
-
-- **@tokenring-ai/ai-client**: For AI chat functionality
-- **@tokenring-ai/app**: For service management and plugin system
-- **@tokenring-ai/agent**: For agent integration and state management
-- **@tokenring-ai/chat**: For chat execution and tool management
-- **@tokenring-ai/utility**: For registry and utility functions
-- **zod**: For schema validation
-
 ## License
 
-MIT
-
-## Version
-
-0.2.0
+MIT License - see [LICENSE](./LICENSE) file for details.

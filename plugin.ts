@@ -10,7 +10,7 @@ import TemplateService from "./TemplateService.ts";
 import tools from "./tools.ts";
 
 const packageConfigSchema = z.object({
-  template: TemplateConfigSchema.optional()
+  templates: TemplateConfigSchema.optional()
 });
 
 
@@ -19,7 +19,7 @@ export default {
   version: packageJSON.version,
   description: packageJSON.description,
   install(app, config) {
-    if (config.template) {
+    if (config.templates) {
       app.waitForService(ChatService, chatService =>
         chatService.addTools(packageJSON.name, tools)
       );
@@ -27,7 +27,7 @@ export default {
         agentCommandService.addAgentCommands(chatCommands)
       );
 
-      app.addServices(new TemplateService(config.template));
+      app.addServices(new TemplateService(config.templates));
     }
   },
   config: packageConfigSchema
