@@ -54,6 +54,7 @@ describe('Template Integration Tests', () => {
     vi.mocked(runChat).mockResolvedValue(['Integration test output', { 
       response: 'Integration response',
       usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+      totalUsage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
       timing: { duration: 100 },
       cost: { input: 0.01, cachedInput: 0, output: 0.02, reasoning: 0, total: 0.03 }
     }]);
@@ -245,6 +246,7 @@ describe('Template Integration Tests', () => {
         .mockResolvedValueOnce(['First output', { 
           response: 'First response',
           usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
+          totalUsage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
           timing: { duration: 100 },
           cost: { input: 0.01, cachedInput: 0, output: 0.02, reasoning: 0, total: 0.03 }
         }])
