@@ -1,4 +1,6 @@
 import createTestingAgent from "@tokenring-ai/agent/test/createTestingAgent";
+import {ChatModelRegistry} from "@tokenring-ai/ai-client/ModelRegistry";
+import TokenRingApp from "@tokenring-ai/app";
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
 import {ChatService} from "@tokenring-ai/chat";
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
@@ -6,15 +8,18 @@ import { Agent } from '@tokenring-ai/agent';
 import TemplateService from '../TemplateService';
 import templateCommand from '../commands/template';
 
-const app = createTestingApp();
+const chatModelRegistry = new ChatModelRegistry();
 
 describe('Template Commands', () => {
-  let mockAgent: Agent;
-  let mockChatService: ChatService;
-  let mockTemplateService: TemplateService;
+  let agent: Agent;
+  let chatService: ChatService;
+  let templateService: TemplateService;
+  let app: TokenRingApp;
 
   beforeEach(() => {
-    mockTemplateService = new TemplateService({
+    app = createTestingApp()
+    
+    templateService = new TemplateService({
       summarize: async (input) => ({
         inputs: [`/help`],
         nextTemplate: undefined,
@@ -30,13 +35,27 @@ describe('Template Commands', () => {
         nextTemplate: undefined,
       }),
     });
-    app.addServices(mockTemplateService);
+    app.addServices(templateService);
 
-    mockChatService = new ChatService({})
 
-    app.addServices(mockChatService);
 
-    mockAgent = createTestingAgent(app);
+    chatService = new ChatService(app,{
+      defaultModels: [],
+      agentDefaults: {
+        model: 'auto',
+        autoCompact: true,
+        enabledTools: [],
+        maxSteps: 30,
+        context: {
+          initial: [],
+          followUp: []
+        }
+      }
+    });
+    app.addServices(chatService);
+    app.addServices(chatModelRegistry);
+
+    agent = createTestingAgent(app);
   });
 
   afterEach(() => {
@@ -64,7 +83,7 @@ describe('Template Commands', () => {
   describe('List Command', () => {
     it('should list all templates when there are templates', () => {
       // This tests the actual listTemplates function behavior
-      const templates = mockTemplateService.listTemplates()
+      const templates = templateService.listTemplates()
       
       expect(templates).toEqual(['summarize', 'analyze', 'generate']);
     });
@@ -73,55 +92,55 @@ describe('Template Commands', () => {
 
   describe('Info Command', () => {
     it('should handle non-existent template in info command', () => {
-      vi.spyOn(mockTemplateService, 'getTemplateByName').mockReturnValue(undefined);
+      vi.spyOn(templateService, 'getTemplateByName').mockReturnValue(undefined);
       
-      const template = mockTemplateService.getTemplateByName('non-existent');
+      const template = templateService.getTemplateByName('non-existent');
       expect(template).toBeUndefined();
     });
   });
 
   describe('Command Execution Integration', () => {
     it('should execute list command', async () => {
-      vi.spyOn(mockTemplateService, 'listTemplates');
-      await templateCommand.execute('list', mockAgent);
+      vi.spyOn(templateService, 'listTemplates');
+      await templateCommand.execute('list', agent);
 
-      expect(mockTemplateService.listTemplates).toHaveBeenCalled();
+      expect(templateService.listTemplates).toHaveBeenCalled();
     });
 
     it('should execute run command with arguments', async () => {
-      vi.spyOn(mockTemplateService, 'runTemplate').mockResolvedValue({ ok: true });
-       await templateCommand.execute('run summarize This is test input', mockAgent);
+      vi.spyOn(templateService, 'runTemplate').mockResolvedValue({ ok: true });
+       await templateCommand.execute('run summarize This is test input', agent);
 
-      expect(mockTemplateService.runTemplate).toHaveBeenCalledWith(
+      expect(templateService.runTemplate).toHaveBeenCalledWith(
         expect.objectContaining({
           templateName: 'summarize',
           input: 'This is test input',
         }),
-        mockAgent
+        agent
       );
     });
 
     it('should execute info command', async () => {
-      vi.spyOn(mockTemplateService, 'getTemplateByName');
-      await templateCommand.execute('info summarize', mockAgent);
+      vi.spyOn(templateService, 'getTemplateByName');
+      await templateCommand.execute('info summarize', agent);
 
-      expect(mockTemplateService.getTemplateByName).toHaveBeenCalledWith('summarize');
+      expect(templateService.getTemplateByName).toHaveBeenCalledWith('summarize');
     });
 
     it('should handle unknown commands', async () => {
-      vi.spyOn(mockAgent, 'systemMessage');
-      await templateCommand.execute('unknown-command', mockAgent);
+      vi.spyOn(agent, 'systemMessage');
+      await templateCommand.execute('unknown-command', agent);
       
-      expect(mockAgent.systemMessage).toHaveBeenCalledWith(
+      expect(agent.systemMessage).toHaveBeenCalledWith(
         'Unknown subcommand: unknown-command'
       );
     });
 
     it('should show help when no command provided', async () => {
-      vi.spyOn(mockAgent, 'systemMessage');
-      await templateCommand.execute('', mockAgent);
+      vi.spyOn(agent, 'systemMessage');
+      await templateCommand.execute('', agent);
       
-      expect(mockAgent.systemMessage).toHaveBeenCalledWith(
+      expect(agent.systemMessage).toHaveBeenCalledWith(
         'Template Command Usage:'
       );
     });
@@ -129,30 +148,30 @@ describe('Template Commands', () => {
 
   describe('Template Service Integration', () => {
     it('should handle template execution', async () => {
-      vi.spyOn(mockTemplateService, 'runTemplate').mockResolvedValue({
+      vi.spyOn(templateService, 'runTemplate').mockResolvedValue({
         ok: true,
         output: 'Test output',
         response: { data: 'test' },
       });
 
-      await templateCommand.execute('run test-template test input', mockAgent);
+      await templateCommand.execute('run test-template test input', agent);
       
-      expect(mockTemplateService.runTemplate).toHaveBeenCalledWith(
+      expect(templateService.runTemplate).toHaveBeenCalledWith(
         expect.objectContaining({
           templateName: 'test-template',
           input: 'test input',
         }),
-        mockAgent
+        agent
       );
     });
 
     it('should handle template not found errors', async () => {
-      vi.spyOn(mockTemplateService, 'runTemplate').mockRejectedValue(
+      vi.spyOn(templateService, 'runTemplate').mockRejectedValue(
         new Error('Template not found: non-existent')
       );
 
       await expect(
-        templateCommand.execute('run non-existent input', mockAgent)
+        templateCommand.execute('run non-existent input', agent)
       ).rejects.toThrow('Template not found: non-existent');
     });
   });
