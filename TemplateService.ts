@@ -110,21 +110,24 @@ export default class TemplateService implements TokenRingService {
 
       const chatConfig = chatService.getChatConfig(agent);
 
-      let lastResult: [string, AIResponse] | null = null
+      let lastResult: AIResponse | null = null
 
       for (const input of chatRequest.inputs ?? []) {
         // Run the chat with the generated request
         lastResult = await runChat(input, chatConfig, agent);
 
-        outputChatAnalytics(lastResult[1], agent, templateName);
+        outputChatAnalytics(lastResult, agent, templateName);
+
+        if (lastResult.finishReason !== "stop") {
+          throw new Error(`AI Chat did not stop as expected, Reason: ${ lastResult.finishReason }`);
+        }
       }
 
 
       // Prepare the result object
       const result: TemplateResult = {
         ok: true,
-        output: lastResult?.[0] ?? "No output from AI.",
-        response: lastResult?.[1] ?? "No response from AI.",
+        output: lastResult?.text ?? "No output from AI."
       };
 
       // Check if the template wants to run another template next
@@ -143,7 +146,7 @@ export default class TemplateService implements TokenRingService {
         const nextTemplateResult = await this.runTemplate(
           {
             templateName: chatRequest.nextTemplate,
-            input: lastResult?.[0] ?? "No output from AI.",
+            input: lastResult?.text ?? "No output from AI.",
             visitedTemplates: [...visitedTemplates, templateName],
           },
           agent,
