@@ -1,7 +1,7 @@
 import {TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import createSubcommandRouter from "@tokenring-ai/agent/util/subcommandRouter";
-import list from "./template/list.js";
 import info from "./template/info.js";
+import list from "./template/list.js";
 import run from "./template/run.js";
 
 const description = "/template - Run prompt templates";

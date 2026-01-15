@@ -1,4 +1,5 @@
 import Agent from "@tokenring-ai/agent/Agent";
+import indent from "@tokenring-ai/utility/string/indent";
 import TemplateService from "../../TemplateService.js";
 
 export default async function info(remainder: string, agent: Agent): Promise<void> {
@@ -6,17 +7,20 @@ export default async function info(remainder: string, agent: Agent): Promise<voi
   const templateName = remainder.trim();
   
   if (!templateName) {
-    agent.systemMessage("Please provide a template name.");
+    agent.infoMessage("Please provide a template name.");
     return;
   }
 
   const template = templateRegistry.getTemplateByName(templateName);
   if (!template) {
-    agent.systemMessage(`Template not found: ${templateName}`);
+    agent.infoMessage(`Template not found: ${templateName}`);
     return;
   }
 
-  agent.systemMessage(`Template: ${templateName}`);
-  agent.systemMessage("Usage:");
-  agent.systemMessage(`  /template run ${templateName} <input>`);
+  const lines: string[] = [
+    `Template: ${templateName}`,
+    "Usage:",
+    indent(`/template run ${templateName} <input>`, 1)
+  ];
+  agent.infoMessage(lines.join("\n"));
 }

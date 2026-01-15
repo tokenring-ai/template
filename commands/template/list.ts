@@ -1,4 +1,5 @@
 import Agent from "@tokenring-ai/agent/Agent";
+import markdownList from "@tokenring-ai/utility/string/markdownList";
 import TemplateService from "../../TemplateService.js";
 
 export default async function list(_remainder: string, agent: Agent): Promise<void> {
@@ -6,12 +7,13 @@ export default async function list(_remainder: string, agent: Agent): Promise<vo
   const templates = templateRegistry.listTemplates();
 
   if (templates.length === 0) {
-    agent.systemMessage("No templates available.");
+    agent.infoMessage("No templates available.");
     return;
   }
 
-  agent.systemMessage("Available templates:");
-  templates.forEach((name) => {
-    agent.systemMessage(`  - ${name}`);
-  });
+  const lines: string[] = [
+    "Available templates:",
+    markdownList(templates)
+  ];
+  agent.infoMessage(lines.join("\n"));
 }

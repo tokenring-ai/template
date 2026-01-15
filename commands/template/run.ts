@@ -6,7 +6,7 @@ export default async function run(remainder: string, agent: Agent): Promise<void
   const args = remainder.trim().split(/\s+/);
   
   if (!args || args.length < 1 || !args[0]) {
-    agent.systemMessage("Please provide a template name.");
+    agent.infoMessage("Please provide a template name.");
     return;
   }
 

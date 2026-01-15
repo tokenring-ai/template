@@ -1,10 +1,10 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { Agent } from '@tokenring-ai/agent';
+import {Agent} from '@tokenring-ai/agent';
+import runChat from '@tokenring-ai/chat/runChat';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
+import templateCommand from '../commands/template';
 import TemplateService from '../TemplateService';
 import listTemplates from '../tools/listTemplates';
 import runTemplate from '../tools/runTemplate';
-import templateCommand from '../commands/template';
-import runChat from '@tokenring-ai/chat/runChat';
 
 vi.mock('@tokenring-ai/chat/runChat', () => ({
   default: vi.fn(),
@@ -66,7 +66,7 @@ describe('Template Integration Tests', () => {
         throw new Error(`Unknown service type: ${serviceType?.name}`);
       }),
       systemMessage: vi.fn(),
-      infoLine: vi.fn(),
+      infoMessage: vi.fn(),
       reset: vi.fn(),
     };
   });
@@ -140,7 +140,7 @@ describe('Template Integration Tests', () => {
         input: 'Tool test input',
       }, mockAgent as Agent);
 
-      expect(mockAgent.infoLine).toHaveBeenCalledWith('[template_run] Running template: simple-template');
+      expect(mockAgent.infoMessage).toHaveBeenCalledWith('[template_run] Running template: simple-template');
       expect(runChat).toHaveBeenCalledWith('Tool test input', {}, mockAgent);
     });
 

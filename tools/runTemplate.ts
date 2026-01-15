@@ -22,7 +22,7 @@ async function execute(
   const templateRegistry: TemplateService =
     agent.requireServiceByType(TemplateService);
 
-  agent.infoLine(`[${name}] Running template: ${templateName}`);
+  agent.infoMessage(`[${name}] Running template: ${templateName}`);
   if (!templateName) {
     throw new Error("Template name is required");
   }

@@ -4,7 +4,7 @@ import {AIResponse} from "@tokenring-ai/ai-client/client/AIChatClient";
 import {TokenRingService} from "@tokenring-ai/app/types";
 import {ChatService} from "@tokenring-ai/chat";
 import runChat from "@tokenring-ai/chat/runChat";
-import { outputChatAnalytics } from "@tokenring-ai/chat/util/outputChatAnalytics";
+import {outputChatAnalytics} from "@tokenring-ai/chat/util/outputChatAnalytics";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import {z} from "zod";
 
@@ -91,7 +91,7 @@ export default class TemplateService implements TokenRingService {
 
       // Check if the template wants to reset context
       if (chatRequest.reset) {
-        agent.systemMessage(`Resetting ${chatRequest.reset.join(",")} context for template: ${templateName}`);
+        agent.infoMessage(`Resetting ${chatRequest.reset.join(",")} context for template: ${templateName}`);
         agent.reset(chatRequest.reset);
       }
 
@@ -102,7 +102,7 @@ export default class TemplateService implements TokenRingService {
         chatService.setEnabledTools(chatRequest.activeTools, agent);
 
         toolsChanged = true;
-        agent.systemMessage(
+        agent.infoMessage(
           `Set active tools for template: ${chatRequest.activeTools.join(", ")}`,
         );
       }
@@ -138,7 +138,7 @@ export default class TemplateService implements TokenRingService {
         }
 
         // Log that we're running the next template
-        agent.systemMessage(
+        agent.infoMessage(
           `Running next template: ${chatRequest.nextTemplate}`,
         );
 
@@ -165,7 +165,7 @@ export default class TemplateService implements TokenRingService {
       if (toolsChanged && originalTools !== null) {
         const chatService = agent.requireServiceByType(ChatService);
         chatService.setEnabledTools(originalTools, agent);
-        agent.systemMessage(
+        agent.infoMessage(
           `Restored original tools: ${originalTools.join(", ") || "none"}`,
         );
       }

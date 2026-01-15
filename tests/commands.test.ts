@@ -1,12 +1,12 @@
+import {Agent} from '@tokenring-ai/agent';
 import createTestingAgent from "@tokenring-ai/agent/test/createTestingAgent";
 import {ChatModelRegistry} from "@tokenring-ai/ai-client/ModelRegistry";
 import TokenRingApp from "@tokenring-ai/app";
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
 import {ChatService} from "@tokenring-ai/chat";
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
-import { Agent } from '@tokenring-ai/agent';
-import TemplateService from '../TemplateService';
+import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import templateCommand from '../commands/template';
+import TemplateService from '../TemplateService';
 
 const chatModelRegistry = new ChatModelRegistry();
 
