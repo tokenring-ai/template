@@ -4,6 +4,7 @@ import {z} from "zod";
 import TemplateService from "../TemplateService.ts";
 
 const name = "template_list";
+const displayName = "Template/listTemplates";
 
 /**
  * Lists all available templates via the tool interface
@@ -31,5 +32,5 @@ const description =
 const inputSchema = z.object({});
 
 export default {
-  name, description, inputSchema, execute,
+  name, displayName, description, inputSchema, execute,
 } satisfies TokenRingToolDefinition<typeof inputSchema>;

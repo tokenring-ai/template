@@ -4,6 +4,7 @@ import {z} from "zod";
 import TemplateService from "../TemplateService.ts";
 
 const name = "template_run";
+const displayName = "Template/runTemplate";
 
 /**
  * Runs a template with the given input via the tool interface
@@ -43,5 +44,5 @@ const inputSchema = z.object({
 });
 
 export default {
-  name, description, inputSchema, execute,
+  name, displayName, description, inputSchema, execute,
 } satisfies TokenRingToolDefinition<typeof inputSchema>;
