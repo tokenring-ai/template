@@ -1,5 +1,5 @@
 import {Agent} from "@tokenring-ai/agent";
-import {TokenRingToolDefinition} from "@tokenring-ai/chat/schema";
+import {TokenRingToolDefinition, type TokenRingToolJSONResult} from "@tokenring-ai/chat/schema";
 import {z} from "zod";
 import TemplateService from "../TemplateService.ts";
 
@@ -9,20 +9,17 @@ const displayName = "Template/listTemplates";
 /**
  * Lists all available templates via the tool interface
  */
-async function execute({}: z.infer<typeof inputSchema>, agent: Agent): Promise<{
-  ok: boolean;
+async function execute({}: z.output<typeof inputSchema>, agent: Agent): Promise<TokenRingToolJSONResult<{
   templates: string[];
-  error?: string;
-}> {
+}>> {
   const templateRegistry: TemplateService =
     agent.requireServiceByType(TemplateService);
 
-  // Get the list of templates
   const templates = templateRegistry.listTemplates();
 
   return {
-    ok: true,
-    templates,
+    type: "json",
+    data: {templates},
   };
 }
 

@@ -1,5 +1,5 @@
 import Agent from "@tokenring-ai/agent/Agent";
-import {TokenRingToolDefinition} from "@tokenring-ai/chat/schema";
+import {TokenRingToolDefinition, type TokenRingToolJSONResult} from "@tokenring-ai/chat/schema";
 import {z} from "zod";
 import TemplateService from "../TemplateService.ts";
 
@@ -10,29 +10,30 @@ const displayName = "Template/runTemplate";
  * Runs a template with the given input via the tool interface
  */
 async function execute(
-  {templateName, input}: z.infer<typeof inputSchema>,
+  {templateName, input}: z.output<typeof inputSchema>,
   agent: Agent,
-): Promise<{
-  ok: boolean;
+): Promise<TokenRingToolJSONResult<{
   output?: string;
   response?: any;
-  usage?: any;
-  timing?: any;
-  error?: string;
-}> {
+}>> {
   const templateRegistry: TemplateService =
     agent.requireServiceByType(TemplateService);
 
   agent.infoMessage(`[${name}] Running template: ${templateName}`);
-  if (!templateName) {
-    throw new Error("Template name is required");
-  }
-  if (!input) {
-    throw new Error("Input is required");
+
+  const result = await templateRegistry.runTemplate({templateName, input}, agent);
+  
+  if (!result.ok) {
+    throw new Error(result.error || "Template execution failed");
   }
 
-
-  return await templateRegistry.runTemplate({templateName, input}, agent);
+  return {
+    type: "json",
+    data: {
+      output: result.output,
+      response: result.response,
+    }
+  };
 }
 
 const description =
