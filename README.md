@@ -98,7 +98,7 @@ interface TemplateResult {
 ### Basic Template Execution
 
 ```typescript
-// Run a template via tool
+// Run a template
 const result = await templateService.runTemplate(
   { templateName: "summarize", input: "Long article text..." },
   agent
@@ -269,22 +269,30 @@ const config = {
 };
 ```
 
+The configuration schema is defined as `TemplateConfigSchema` in the package:
+
+```typescript
+import { TemplateConfigSchema } from "@tokenring-ai/template";
+
+const config = {
+  templates: TemplateConfigSchema.parse({
+    summarize: async (input: string) => ({
+      inputs: [input],
+    }),
+  })
+};
+```
+
 ## Integration with TokenRing Ecosystem
 
 ### Plugin Architecture
 
 The package automatically integrates with TokenRing applications via the plugin system:
 
-```typescript
-export default {
-  name: "@tokenring-ai/template",
-  install(app: TokenRingApp) {
-    // Templates are automatically registered
-    // Tools and commands are automatically added
-    // Service is automatically attached to agents
-  }
-}
-```
+### Service Dependencies
+
+- **ChatService**: For chat execution and tool management
+- **Agent**: For template execution context
 
 ### State Management
 
@@ -345,10 +353,13 @@ export default {
 }
 ```
 
-3. Use it via chat command or tools:
+3. Use it via the TemplateService:
 
-```
-/template run myCustomTemplate "Your input here"
+```typescript
+const result = await templateService.runTemplate(
+  { templateName: "myCustomTemplate", input: "Your input here" },
+  agent
+);
 ```
 
 ### Testing Templates
@@ -358,6 +369,12 @@ export default {
 const chatRequest = await myCustomTemplate("test input");
 console.log(chatRequest.inputs); // ["test input"]
 console.log(chatRequest.nextTemplate); // undefined if no chaining
+```
+
+### Run Tests
+
+```bash
+bun run test
 ```
 
 ## License
