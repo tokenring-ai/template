@@ -2,7 +2,7 @@ import {Agent} from '@tokenring-ai/agent';
 import runChat from '@tokenring-ai/chat/runChat';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
 import templateCommand from '../commands/template';
-import TemplateService from '../TemplateService';
+import TemplateService, {type TemplateResult} from '../TemplateService';
 import listTemplates from '../tools/listTemplates';
 import runTemplate from '../tools/runTemplate';
 
@@ -280,7 +280,7 @@ describe('Template Integration Tests', () => {
 
   describe('Performance Integration', () => {
     it('should handle concurrent template execution', async () => {
-      const promises = [
+      const promises: Array<Promise<TemplateResult>> = [
         mockTemplateService.runTemplate({
           templateName: 'simple-template',
           input: 'Concurrent input 1',

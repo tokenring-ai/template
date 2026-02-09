@@ -44,7 +44,7 @@ export type TemplateServiceOptions = Record<string, TemplateFunction>;
  * Stores and manages template functions that can be used to generate chat requests
  */
 export default class TemplateService implements TokenRingService {
-  name = "TemplateService";
+  readonly name = "TemplateService";
   description = "Provides a registry of prompt templates";
 
   /**
