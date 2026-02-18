@@ -193,8 +193,19 @@ The package provides two main tools:
 
 Lists all available templates.
 
-**Parameters:** None
-**Returns:** Array of template names
+**Parameters:** None  
+**Returns:** `{ templates: string[] }`
+
+**Tool Definition:**
+```typescript
+{
+  name: "template_list",
+  displayName: "Template/listTemplates",
+  description: "Lists all available templates. Returns an array of template names that can be used with the runTemplate tool.",
+  inputSchema: z.object({}),
+  execute: (input, agent) => Promise<{ type: "json", data: { templates: string[] } }>
+}
+```
 
 ### `template_run`
 
@@ -204,7 +215,21 @@ Runs a template with the given input.
 - `templateName`: Name of the template to run
 - `input`: Input text for the template
 
-**Returns:** Template execution result with output and response data
+**Returns:** `{ output?: string, response?: any }`
+
+**Tool Definition:**
+```typescript
+{
+  name: "template_run",
+  displayName: "Template/runTemplate",
+  description: "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.",
+  inputSchema: z.object({
+    templateName: z.string().describe("The name of the template to run."),
+    input: z.string().describe("The input to pass to the template."),
+  }),
+  execute: ({templateName, input}, agent) => Promise<{ type: "json", data: { output?: string, response?: any } }>
+}
+```
 
 ## Chat Commands
 
@@ -246,30 +271,7 @@ Show information about a specific template.
 
 ## Configuration
 
-Templates are configured via the TokenRing configuration system:
-
-```typescript
-// Configuration schema is automatically validated
-const config = {
-  templates: {
-    // Template name -> Template function mapping
-    summarize: async (input: string) => ({
-      inputs: [input],
-    }),
-    translateToFrench: async (input: string) => ({
-      inputs: [input],
-      system: "You are a professional translator.",
-    }),
-    research: async (input: string) => ({
-      inputs: [input],
-      activeTools: ["websearch", "wikipedia"],
-      nextTemplate: "summarizeFindings",
-    }),
-  }
-};
-```
-
-The configuration schema is defined as `TemplateConfigSchema` in the package:
+Templates are configured via the TokenRing configuration system. The configuration schema is defined as `TemplateConfigSchema` and is automatically validated:
 
 ```typescript
 import { TemplateConfigSchema } from "@tokenring-ai/template";
@@ -279,15 +281,35 @@ const config = {
     summarize: async (input: string) => ({
       inputs: [input],
     }),
+    translateToFrench: async (input: string) => ({
+      inputs: [input],
+    }),
+    research: async (input: string) => ({
+      inputs: [input],
+      activeTools: ["websearch", "wikipedia"],
+      nextTemplate: "summarizeFindings",
+    }),
   })
 };
+```
+
+**Configuration Schema:**
+```typescript
+z.record(
+  z.string(),
+  z.custom<(input: string) => Promise<TemplateChatRequest>>()
+).optional()
 ```
 
 ## Integration with TokenRing Ecosystem
 
 ### Plugin Architecture
 
-The package automatically integrates with TokenRing applications via the plugin system:
+The package automatically integrates with TokenRing applications via the plugin system. The plugin registers:
+
+- **ChatTools**: `template_list` and `template_run` tools
+- **AgentCommands**: `/template` command with subcommands (`list`, `info`, `run`)
+- **TemplateService**: Manages template registry and execution
 
 ### Service Dependencies
 
@@ -376,6 +398,48 @@ console.log(chatRequest.nextTemplate); // undefined if no chaining
 ```bash
 bun run test
 ```
+
+## Package Structure
+
+```
+pkg/template/
+├── index.ts                    # Package exports (TemplateConfigSchema, TemplateService)
+├── package.json                # Package metadata and dependencies
+├── plugin.ts                   # TokenRing plugin implementation
+├── TemplateService.ts          # Core template management service
+├── tools.ts                    # Tool exports (template_list, template_run)
+├── tools/
+│   ├── listTemplates.ts        # List templates tool implementation
+│   └── runTemplate.ts          # Run template tool implementation
+├── chatCommands.ts             # Chat command exports (/template)
+├── commands/
+│   └── template/
+│       ├── template.ts         # Main template command router
+│       ├── info.ts             # /template info subcommand
+│       ├── list.ts             # /template list subcommand
+│       └── run.ts              # /template run subcommand
+├── tests/
+│   ├── TemplateService.test.ts
+│   ├── commands.test.ts
+│   ├── integration.test.ts
+│   └── tools.test.ts
+└── docs/
+    └── design.md               # Design documentation
+```
+
+## Dependencies
+
+### Production Dependencies
+- `@tokenring-ai/ai-client`: Multi-provider AI integration
+- `@tokenring-ai/app`: Base application framework
+- `@tokenring-ai/agent`: Central orchestration system
+- `@tokenring-ai/chat`: Chat service and integration
+- `@tokenring-ai/utility`: Shared utilities and helpers
+- `zod`: Schema validation
+
+### Development Dependencies
+- `vitest`: Testing framework
+- `typescript`: TypeScript compiler
 
 ## License
 
