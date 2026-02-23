@@ -4,7 +4,7 @@ import {AIResponse} from "@tokenring-ai/ai-client/client/AIChatClient";
 import {TokenRingService} from "@tokenring-ai/app/types";
 import {ChatService} from "@tokenring-ai/chat";
 import runChat from "@tokenring-ai/chat/runChat";
-import {outputChatAnalytics} from "@tokenring-ai/chat/util/outputChatAnalytics";
+import {getChatAnalytics} from "@tokenring-ai/chat/util/getChatAnalytics";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import {z} from "zod";
 
@@ -116,7 +116,7 @@ export default class TemplateService implements TokenRingService {
         // Run the chat with the generated request
         lastResult = await runChat(input, chatConfig, agent);
 
-        outputChatAnalytics(lastResult, agent, templateName);
+        agent.infoMessage(`Input Complete:\n${getChatAnalytics(lastResult)}`);
 
         if (lastResult.finishReason !== "stop") {
           throw new Error(`AI Chat did not stop as expected, Reason: ${ lastResult.finishReason }`);
