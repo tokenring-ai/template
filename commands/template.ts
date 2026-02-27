@@ -59,6 +59,7 @@ The template command allows you to work with reusable prompt templates. Template
 `;
 
 export default {
+  name: "template",
   description,
   execute,
   help,
