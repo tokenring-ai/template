@@ -114,7 +114,7 @@ export default class TemplateService implements TokenRingService {
 
       for (const input of chatRequest.inputs ?? []) {
         // Run the chat with the generated request
-        lastResult = await runChat(input, chatConfig, agent);
+        lastResult = await runChat({input, chatConfig, agent});
 
         agent.infoMessage(`Input Complete:\n${getChatAnalytics(lastResult)}`);
 
