@@ -1,18 +1,20 @@
 import Agent from "@tokenring-ai/agent/Agent";
+import {TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import markdownList from "@tokenring-ai/utility/string/markdownList";
 import TemplateService from "../../TemplateService.js";
 
-export default async function list(_remainder: string, agent: Agent): Promise<string> {
-  const templateRegistry = agent.requireServiceByType(TemplateService);
-  const templates = templateRegistry.listTemplates();
+export default {
+  name: "template list",
+  description: "/template list - List available templates",
+  help: `# /template list
 
-  if (templates.length === 0) {
-    return "No templates available.";
-  }
+List all available templates.
 
-  const lines: string[] = [
-    "Available templates:",
-    markdownList(templates)
-  ];
-  return lines.join("\n");
-}
+## Example
+
+/template list`,
+  execute: async (_remainder: string, agent: Agent): Promise<string> => {
+    const templates = agent.requireServiceByType(TemplateService).listTemplates();
+    return templates.length === 0 ? "No templates available." : `Available templates:\n${markdownList(templates)}`;
+  },
+} satisfies TokenRingAgentCommand;

@@ -1,3 +1,5 @@
-import template from "./commands/template.ts";
+import info from './commands/template/info.js';
+import list from './commands/template/list.js';
+import run from './commands/template/run.js';
 
-export default [template];
+export default [list, info, run];
