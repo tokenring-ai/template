@@ -4,17 +4,16 @@ The Template package provides a powerful registry system for running reusable AI
 
 ## Overview
 
-The `@tokenring-ai/template` package provides a comprehensive system for managing and executing reusable AI prompt templates. It enables users to accelerate repetitive tasks through template chaining, context management, and selective tool activation. The package includes plugin integration, chat commands, and tools for seamless template usage within the TokenRing ecosystem.
+The `@tokenring-ai/template` package provides a comprehensive system for managing and executing reusable AI prompt templates. It enables users to accelerate repetitive tasks through template chaining, tool management, and seamless integration with the TokenRing ecosystem via plugin architecture, chat commands, and tools.
 
 ## Key Features
 
 - **Template Registry**: Manage named template functions with centralized registration using `KeyedRegistry`
 - **Template Chaining**: Support for running multiple templates in sequence via `nextTemplate`
-- **Context Management**: Ability to reset context and manage tool states during template execution
+- **Tool Management**: Automatic tool state preservation and restoration during template execution
 - **Multiple Inputs**: Handle arrays of inputs within a single template execution
 - **Tool Integration**: Automatic tool and command registration with TokenRing applications
 - **Error Handling**: Comprehensive error handling with circular reference detection
-- **State Persistence**: Template execution preserves and restores agent tool states
 - **Command System**: Interactive chat commands (`/template`) for template management
 - **Circular Reference Detection**: Prevents infinite template loops
 - **Tool State Restoration**: Automatically restores original tool states after template execution
@@ -60,7 +59,7 @@ const result = await templateService.runTemplate(
 
 **Properties:**
 - `name: string` - Service name ("TemplateService")
-- `description: string` - Service description
+- `description: string` - Service description ("Provides a registry of prompt templates")
 - `templates: KeyedRegistry<TemplateFunction>` - Registry of template functions
 
 **Methods:**
@@ -78,10 +77,10 @@ import { TemplateChatRequest } from "@tokenring-ai/template";
 export async function myTemplate(input: string): Promise<TemplateChatRequest> {
   return {
     inputs: [input],
-    // Optional parameters
-    nextTemplate: "followUpTemplate", // Chain to another template
-    reset: ["chat", "memory"], // Reset context types
-    activeTools: ["websearch", "wikipedia"], // Enable specific tools
+    // Optional: Chain to another template
+    nextTemplate: "followUpTemplate",
+    // Optional: Enable specific tools during execution
+    activeTools: ["websearch", "wikipedia"],
   };
 }
 ```
@@ -90,10 +89,9 @@ export async function myTemplate(input: string): Promise<TemplateChatRequest> {
 
 ```typescript
 interface TemplateChatRequest {
-  inputs: string[];                    // Array of inputs to process
-  nextTemplate?: string;               // Next template to run
-  reset?: ResetWhat[];                 // Context types to reset
-  activeTools?: string[];              // Tools to enable during execution
+  inputs: string[];           // Array of inputs to process
+  nextTemplate?: string;      // Next template to run (for chaining)
+  activeTools?: string[];     // Tools to enable during execution
 }
 ```
 
@@ -101,11 +99,11 @@ interface TemplateChatRequest {
 
 ```typescript
 interface TemplateResult {
-  ok: boolean;
-  output?: string;
-  response?: any;
-  error?: string;
-  nextTemplateResult?: TemplateResult; // For chained templates
+  ok: boolean;                // Whether execution was successful
+  output?: string;            // Final AI output text
+  response?: any;             // Full AI response object
+  error?: string;             // Error message if ok is false
+  nextTemplateResult?: TemplateResult; // Result from chained template
 }
 ```
 
@@ -149,13 +147,12 @@ export async function improveDraft(input: string): Promise<TemplateChatRequest> 
 }
 ```
 
-### Context Reset and Tool Management
+### Tool Management
 
 ```typescript
-export async function newTaskTemplate(input: string): Promise<TemplateChatRequest> {
+export async function researchTemplate(input: string): Promise<TemplateChatRequest> {
   return {
     inputs: [input],
-    reset: ["chat", "memory", "events"], // Clear previous context
     activeTools: ["websearch", "wikipedia"], // Enable only these tools
   };
 }
@@ -181,7 +178,6 @@ export async function multiStepAnalysis(input: string): Promise<TemplateChatRequ
 export async function complexWorkflow(input: string): Promise<TemplateChatRequest> {
   return {
     inputs: [input],
-    reset: ["chat", "memory"], // Start fresh context
     activeTools: ["websearch"], // Enable only web search
     nextTemplate: "summarizeFindings" // Chain to summarization
   };
@@ -190,8 +186,7 @@ export async function complexWorkflow(input: string): Promise<TemplateChatReques
 export async function summarizeFindings(input: string): Promise<TemplateChatRequest> {
   return {
     inputs: [input],
-    reset: ["chat"], // Keep memory but reset chat
-    activeTools: [] // No tools needed for summarization
+    // No tools needed for summarization
   };
 }
 ```
@@ -222,7 +217,7 @@ Executes a template with the given input.
 **Parameters:**
 - `templateName`: Name of the template to run
 - `input`: Input text for the template
-- `visitedTemplates`: Array to track template chain (internal use)
+- `visitedTemplates`: Array to track template chain (internal use, optional)
 - `agent`: Agent instance for execution context
 
 **Returns:** `Promise<TemplateResult>` - Execution result
@@ -395,7 +390,6 @@ export default {
     }),
     translateToFrench: async (input: string) => ({
       inputs: [input],
-      system: "You are a professional translator.",
     }),
     research: async (input: string) => ({
       inputs: [input],
@@ -432,7 +426,6 @@ export default {
         }),
         translateToFrench: async (input: string) => ({
           inputs: [input],
-          system: "You are a professional translator.",
         }),
       }
     }
@@ -448,7 +441,6 @@ export default {
 ### State Management
 
 - **Tool State**: Automatically preserved and restored during template execution
-- **Context**: Supports selective context reset via `reset` parameter
 - **Chain Tracking**: Prevents circular references in template chains via `visitedTemplates` parameter
 
 ## Error Handling
@@ -545,10 +537,10 @@ bun run test
 
 The package includes comprehensive test coverage:
 
-- `TemplateService.test.ts` - Unit tests for TemplateService
-- `commands.test.ts` - Tests for chat commands
-- `integration.test.ts` - Integration tests
-- `tools.test.ts` - Tests for tool implementations
+- `tests/TemplateService.test.ts` - Unit tests for TemplateService
+- `tests/commands.test.ts` - Tests for chat commands
+- `tests/integration.test.ts` - Integration tests
+- `tests/tools.test.ts` - Tests for tool implementations
 
 ## Package Structure
 
@@ -604,11 +596,10 @@ pkg/template/
 
 1. **Template Naming**: Use clear, descriptive names that indicate the template's purpose
 2. **Chaining**: Keep template chains short and well-documented to avoid confusion
-3. **Context Reset**: Use `reset` parameter when starting new tasks to avoid context contamination
-4. **Tool Selection**: Enable only necessary tools for each template to optimize performance
-5. **Error Handling**: Always handle potential errors when running templates
-6. **Circular References**: Use the `visitedTemplates` tracking mechanism to prevent infinite loops
-7. **Tool State Restoration**: Be aware that the package automatically restores tool states after template execution
+3. **Tool Selection**: Enable only necessary tools for each template to optimize performance
+4. **Error Handling**: Always handle potential errors when running templates
+5. **Circular References**: Use the `visitedTemplates` tracking mechanism to prevent infinite loops
+6. **Tool State Restoration**: Be aware that the package automatically restores tool states after template execution
 
 ## License
 

@@ -1,5 +1,4 @@
 import {Agent} from "@tokenring-ai/agent";
-import {ResetWhat} from "@tokenring-ai/agent/AgentEvents";
 import {AIResponse} from "@tokenring-ai/ai-client/client/AIChatClient";
 import {TokenRingService} from "@tokenring-ai/app/types";
 import {ChatService} from "@tokenring-ai/chat";
@@ -12,8 +11,6 @@ export const TemplateChatRequestSchema = z.object({
   inputs: z.array(z.string()),
   // Name of the next template to run, if any
   nextTemplate: z.string().optional(),
-  // Whether to reset context; if true
-  reset: z.array(z.custom<ResetWhat>()).optional(),
   // Tools to enable during this template execution
   activeTools: z.array(z.string()).optional(),
 });
@@ -89,11 +86,6 @@ export default class TemplateService implements TokenRingService {
       // Execute the template function with the input
       const chatRequest = await template(input);
 
-      // Check if the template wants to reset context
-      if (chatRequest.reset) {
-        agent.infoMessage(`Resetting ${chatRequest.reset.join(",")} context for template: ${templateName}`);
-        agent.reset(chatRequest.reset);
-      }
 
       // Handle activeTools option - save current tools and set new ones
       if (chatRequest.activeTools && Array.isArray(chatRequest.activeTools)) {
