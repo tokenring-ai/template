@@ -14,7 +14,7 @@ The `@tokenring-ai/template` package provides a comprehensive system for managin
 - **Multiple Inputs**: Handle arrays of inputs within a single template execution
 - **Tool Integration**: Automatic tool and command registration with TokenRing applications
 - **Error Handling**: Comprehensive error handling with circular reference detection
-- **Command System**: Interactive chat commands (`/template`) for template management
+- **Command System**: Interactive chat commands (`/template list`, `/template run`, `/template info`) for template management
 - **Circular Reference Detection**: Prevents infinite template loops
 - **Tool State Restoration**: Automatically restores original tool states after template execution
 
@@ -294,7 +294,7 @@ console.log(result.data.output);
 
 ## Chat Commands
 
-The package provides the `/template` command with the following subcommands:
+The package provides three chat commands for template management:
 
 ### `/template list`
 
@@ -315,7 +315,7 @@ Available templates:
 
 ### `/template run <templateName> [input]`
 
-Run a template with optional input.
+Run a template with optional input text.
 
 **Arguments:**
 - `templateName`: Name of the template to run
@@ -324,6 +324,11 @@ Run a template with optional input.
 **Example:**
 ```
 /template run summarize This is the text to summarize
+```
+
+**Output:**
+```
+Template executed
 ```
 
 ### `/template info <templateName>`
@@ -409,7 +414,7 @@ export default {
 The package automatically integrates with TokenRing applications via the plugin system. The plugin registers:
 
 - **ChatTools**: `template_list` and `template_run` tools
-- **AgentCommands**: `/template` command with subcommands (`list`, `info`, `run`)
+- **AgentCommands**: `/template list`, `/template run`, and `/template info` commands
 - **TemplateService**: Manages template registry and execution
 
 **Plugin Registration:**
@@ -554,7 +559,7 @@ pkg/template/
 ├── tools/
 │   ├── listTemplates.ts        # List templates tool implementation
 │   └── runTemplate.ts          # Run template tool implementation
-├── commands.ts                 # Chat command exports (/template)
+├── commands.ts                 # Chat command exports (/template list, /template run, /template info)
 ├── commands/
 │   └── template/
 │       ├── info.ts             # /template info subcommand
@@ -582,7 +587,7 @@ pkg/template/
 
 ### Development Dependencies
 
-- `vitest`: Testing framework (^4.0.18)
+- `vitest`: Testing framework (^4.1.0)
 - `typescript`: TypeScript compiler (^5.9.3)
 
 ## Related Components
