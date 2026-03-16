@@ -1,21 +1,26 @@
-import Agent from "@tokenring-ai/agent/Agent";
-import {TokenRingAgentCommand} from "@tokenring-ai/agent/types";
+import type {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import TemplateService from "../../TemplateService.js";
+
+const inputSchema = {
+  args: {},
+  positionals: [
+    {name: "templateName", description: "Template name", required: true},
+    {name: "prompt", description: "Prompt for the template", required: false, defaultValue: "", greedy: true},
+  ],
+  allowAttachments: false,
+} as const satisfies AgentCommandInputSchema;
 
 export default {
   name: "template run",
   description: "Run a template",
-  help: `# /template run <templateName> [input]
-
-Run a template with optional input text.
+  help: `Run a template with optional input text.
 
 ## Example
 
 /template run summarize This is the text to summarize`,
-  execute: async (remainder: string, agent: Agent): Promise<string> => {
-    const args = remainder.trim().split(/\s+/);
-    if (!args[0]) return "Please provide a template name.";
-    await agent.requireServiceByType(TemplateService).runTemplate({ templateName: args[0], input: args.slice(1).join(" ") || "" }, agent);
+  inputSchema,
+  execute: async ({positionals: { templateName, prompt }, agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> => {
+    await agent.requireServiceByType(TemplateService).runTemplate({ templateName, input: prompt }, agent);
     return "Template executed";
   },
-} satisfies TokenRingAgentCommand;
+} satisfies TokenRingAgentCommand<typeof inputSchema>;
