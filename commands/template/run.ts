@@ -4,7 +4,7 @@ import TemplateService from "../../TemplateService.js";
 
 export default {
   name: "template run",
-  description: "/template run - Run a template",
+  description: "Run a template",
   help: `# /template run <templateName> [input]
 
 Run a template with optional input text.

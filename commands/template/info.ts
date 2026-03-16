@@ -5,7 +5,7 @@ import TemplateService from "../../TemplateService.js";
 
 export default {
   name: "template info",
-  description: "/template info - Show info about a template",
+  description: "Show info about a template",
   help: `# /template info <templateName>
 
 Show information about a specific template.

@@ -5,7 +5,7 @@ import TemplateService from "../../TemplateService.js";
 
 export default {
   name: "template list",
-  description: "/template list - List available templates",
+  description: "List available templates",
   help: `# /template list
 
 List all available templates.

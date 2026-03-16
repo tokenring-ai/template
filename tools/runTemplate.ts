@@ -36,8 +36,7 @@ async function execute(
   };
 }
 
-const description =
-  "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.";
+const description = "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.";
 
 const inputSchema = z.object({
   templateName: z.string().describe("The name of the template to run."),

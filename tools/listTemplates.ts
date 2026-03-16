@@ -23,8 +23,7 @@ async function execute({}: z.output<typeof inputSchema>, agent: Agent): Promise<
   };
 }
 
-const description =
-  "Lists all available templates. Returns an array of template names that can be used with the runTemplate tool.";
+const description = "Lists all available templates. Returns an array of template names that can be used with the runTemplate tool.";
 
 const inputSchema = z.object({});
 
