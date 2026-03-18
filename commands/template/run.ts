@@ -3,11 +3,8 @@ import TemplateService from "../../TemplateService.js";
 
 const inputSchema = {
   args: {},
-  positionals: [
-    {name: "templateName", description: "Template name", required: true},
-    {name: "prompt", description: "Prompt for the template", required: false, defaultValue: "", greedy: true},
-  ],
-  allowAttachments: false,
+  positionals: [{name: "templateName", description: "Template name", required: true}],
+  remainder: {name: "prompt", description: "Prompt for the template"}
 } as const satisfies AgentCommandInputSchema;
 
 export default {
@@ -19,8 +16,8 @@ export default {
 
 /template run summarize This is the text to summarize`,
   inputSchema,
-  execute: async ({positionals: { templateName, prompt }, agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> => {
-    await agent.requireServiceByType(TemplateService).runTemplate({ templateName, input: prompt }, agent);
+  execute: async ({positionals: {templateName}, remainder, agent}: AgentCommandInputType<typeof inputSchema>): Promise<string> => {
+    await agent.requireServiceByType(TemplateService).runTemplate({templateName, input: remainder ?? ""}, agent);
     return "Template executed";
   },
 } satisfies TokenRingAgentCommand<typeof inputSchema>;

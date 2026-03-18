@@ -4,8 +4,7 @@ import TemplateService from "../../TemplateService.js";
 
 const inputSchema = {
   args: {},
-  positionals: [{name: "templateName", description: "Template name", required: true}],
-  allowAttachments: false,
+  positionals: [{name: "templateName", description: "Template name", required: true}]
 } as const satisfies AgentCommandInputSchema;
 
 export default {
