@@ -1,11 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-// Import after mocking
-import listTemplates from '../tools/listTemplates';
-import runTemplate from '../tools/runTemplate';
-
-// Mock the module dependencies to avoid import errors
-vi.mock('@tokenring-ai/agent');
-vi.mock('@tokenring-ai/chat/types');
+import listTemplates from '../tools/listTemplates.js';
+import runTemplate from '../tools/runTemplate.js';
 
 describe('Template Tools', () => {
   beforeEach(() => {

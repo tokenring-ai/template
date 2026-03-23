@@ -5,8 +5,10 @@ import TokenRingApp from "@tokenring-ai/app";
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
 import {ChatService} from "@tokenring-ai/chat";
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import templateCommand from '../commands/template';
-import TemplateService from '../TemplateService';
+import listCommand from '../commands/template/list.js';
+import infoCommand from '../commands/template/info.js';
+import runCommand from '../commands/template/run.js';
+import TemplateService from '../TemplateService.js';
 
 const chatModelRegistry = new ChatModelRegistry();
 
@@ -23,21 +25,20 @@ describe('Template Commands', () => {
       summarize: async (input) => ({
         inputs: [`/help`],
         nextTemplate: undefined,
-        reset: undefined,
         activeTools: undefined,
       }),
       analyze: async (input) => ({
         inputs: [input],
         nextTemplate: undefined,
+        activeTools: undefined,
       }),
       generate: async (input) => ({
         inputs: [input],
         nextTemplate: undefined,
+        activeTools: undefined,
       }),
     });
     app.addServices(templateService);
-
-
 
     chatService = new ChatService(app,{
       defaultModels: [],
@@ -63,85 +64,104 @@ describe('Template Commands', () => {
   });
 
   describe('Command Registration', () => {
-    it('should have correct command definition', () => {
-      expect(templateCommand.description).toBe('/template - Run prompt templates');
-      expect(templateCommand.help).toContain('# Template Command');
-      expect(templateCommand.execute).toBeDefined();
+    it('should have correct command definitions', () => {
+      expect(listCommand.name).toBe('template list');
+      expect(listCommand.description).toBe('List available templates');
+      expect(listCommand.execute).toBeDefined();
+
+      expect(infoCommand.name).toBe('template info');
+      expect(infoCommand.description).toBe('Show info about a template');
+      expect(infoCommand.execute).toBeDefined();
+
+      expect(runCommand.name).toBe('template run');
+      expect(runCommand.description).toBe('Run a template');
+      expect(runCommand.execute).toBeDefined();
     });
 
-    it('should handle help display', () => {
-      const helpCommand = templateCommand.help;
-      
-      expect(helpCommand).toContain('## Usage');
-      expect(helpCommand).toContain('/template [subcommand] [options]');
-      expect(helpCommand).toContain('### `list`');
-      expect(helpCommand).toContain('### `run <templateName> [input]`');
-      expect(helpCommand).toContain('### `info <templateName>`');
+    it('should have correct help text', () => {
+      expect(listCommand.help).toContain('List all available templates');
+      expect(infoCommand.help).toContain('Show information about a specific template');
+      expect(runCommand.help).toContain('Run a template with optional input text');
     });
   });
 
   describe('List Command', () => {
-    it('should list all templates when there are templates', () => {
-      // This tests the actual listTemplates function behavior
-      const templates = templateService.listTemplates()
+    it('should list all templates when there are templates', async () => {
+      const result = await listCommand.execute({agent} as any);
       
-      expect(templates).toEqual(['summarize', 'analyze', 'generate']);
+      expect(result).toContain('Available templates');
+      expect(result).toContain('summarize');
+      expect(result).toContain('analyze');
+      expect(result).toContain('generate');
+    });
+
+    it('should return message when no templates available', async () => {
+      const emptyService = new TemplateService({});
+      app.addServices(emptyService);
+      const emptyAgent = createTestingAgent(app);
+      
+      const result = await listCommand.execute({agent: emptyAgent} as any);
+      
+      expect(result).toBe('No templates available.');
     });
   });
-
 
   describe('Info Command', () => {
-    it('should handle non-existent template in info command', () => {
-      vi.spyOn(templateService, 'getTemplateByName').mockReturnValue(undefined);
+    it('should show info for existing template', async () => {
+      const result = await infoCommand.execute({
+        positionals: { templateName: 'summarize' },
+        agent
+      }, agent);
       
-      const template = templateService.getTemplateByName('non-existent');
-      expect(template).toBeUndefined();
+      expect(result).toContain('Template: summarize');
+      expect(result).toContain('/template run summarize');
+    });
+
+    it('should handle non-existent template', async () => {
+      const result = await infoCommand.execute({
+        positionals: { templateName: 'non-existent' },
+        agent
+      }, agent);
+      
+      expect(result).toBe('Template not found: non-existent');
     });
   });
 
-  describe('Command Execution Integration', () => {
-    it('should execute list command', async () => {
-      vi.spyOn(templateService, 'listTemplates');
-      await templateCommand.execute('list', agent);
-
-      expect(templateService.listTemplates).toHaveBeenCalled();
-    });
-
+  describe('Run Command', () => {
     it('should execute run command with arguments', async () => {
       vi.spyOn(templateService, 'runTemplate').mockResolvedValue({ ok: true });
-       await templateCommand.execute('run summarize This is test input', agent);
+      
+      const result = await runCommand.execute({
+        positionals: { templateName: 'summarize' },
+        remainder: 'This is test input',
+        agent
+      }, agent);
 
       expect(templateService.runTemplate).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           templateName: 'summarize',
           input: 'This is test input',
-        }),
+        },
         agent
       );
+      expect(result).toBe('Template executed');
     });
 
-    it('should execute info command', async () => {
-      vi.spyOn(templateService, 'getTemplateByName');
-      await templateCommand.execute('info summarize', agent);
-
-      expect(templateService.getTemplateByName).toHaveBeenCalledWith('summarize');
-    });
-
-    it('should handle unknown commands', async () => {
-      vi.spyOn(agent, 'systemMessage');
-      await templateCommand.execute('unknown-command', agent);
+    it('should handle empty remainder', async () => {
+      vi.spyOn(templateService, 'runTemplate').mockResolvedValue({ ok: true });
       
-      expect(agent.systemMessage).toHaveBeenCalledWith(
-        'Unknown subcommand: unknown-command'
-      );
-    });
+      await runCommand.execute({
+        positionals: { templateName: 'analyze' },
+        remainder: undefined,
+        agent
+      }, agent);
 
-    it('should show help when no command provided', async () => {
-      vi.spyOn(agent, 'systemMessage');
-      await templateCommand.execute('', agent);
-      
-      expect(agent.systemMessage).toHaveBeenCalledWith(
-        'Template Command Usage:'
+      expect(templateService.runTemplate).toHaveBeenCalledWith(
+        {
+          templateName: 'analyze',
+          input: '',
+        },
+        agent
       );
     });
   });
@@ -154,13 +174,17 @@ describe('Template Commands', () => {
         response: { data: 'test' },
       });
 
-      await templateCommand.execute('run test-template test input', agent);
+      await runCommand.execute({
+        positionals: { templateName: 'test-template' },
+        remainder: 'test input',
+        agent
+      }, agent);
       
       expect(templateService.runTemplate).toHaveBeenCalledWith(
-        expect.objectContaining({
+        {
           templateName: 'test-template',
           input: 'test input',
-        }),
+        },
         agent
       );
     });
@@ -171,7 +195,11 @@ describe('Template Commands', () => {
       );
 
       await expect(
-        templateCommand.execute('run non-existent input', agent)
+        runCommand.execute({
+          positionals: { templateName: 'non-existent' },
+          remainder: 'input',
+          agent
+        }, agent)
       ).rejects.toThrow('Template not found: non-existent');
     });
   });

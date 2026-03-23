@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vitest';
-import TemplateService from '../TemplateService';
+import TemplateService from '../TemplateService.js';
 
 describe('TemplateService', () => {
   let templateService: TemplateService;
@@ -10,31 +10,21 @@ describe('TemplateService', () => {
       'test-template': async (input: string) => ({
         inputs: [input],
         nextTemplate: undefined,
-        reset: undefined,
         activeTools: undefined,
       }),
       'chained-template': async (input: string) => ({
         inputs: [input],
         nextTemplate: 'final-template',
-        reset: undefined,
         activeTools: undefined,
       }),
       'final-template': async (input: string) => ({
         inputs: [input],
         nextTemplate: undefined,
-        reset: undefined,
-        activeTools: undefined,
-      }),
-      'reset-template': async (input: string) => ({
-        inputs: [input],
-        nextTemplate: undefined,
-        reset: ['memory' as any],
         activeTools: undefined,
       }),
       'tools-template': async (input: string) => ({
         inputs: [input],
         nextTemplate: undefined,
-        reset: undefined,
         activeTools: ['tool1', 'tool2'],
       }),
     };
@@ -68,7 +58,6 @@ describe('TemplateService', () => {
       const validTemplate = async (input: string) => ({
         inputs: [input],
         nextTemplate: undefined,
-        reset: undefined,
         activeTools: undefined,
       });
 
@@ -80,7 +69,6 @@ describe('TemplateService', () => {
       const templateWithChaining = async (input: string) => ({
         inputs: [input],
         nextTemplate: 'test-template',
-        reset: undefined,
         activeTools: undefined,
       });
 
@@ -88,23 +76,10 @@ describe('TemplateService', () => {
       expect(testService.getTemplateByName('chainable')).toBeDefined();
     });
 
-    it('should handle templates with reset options', () => {
-      const templateWithReset = async (input: string) => ({
-        inputs: [input],
-        nextTemplate: undefined,
-        reset: ['memory', 'context'] as any,
-        activeTools: undefined,
-      });
-
-      const testService = new TemplateService({ 'resettable': templateWithReset });
-      expect(testService.getTemplateByName('resettable')).toBeDefined();
-    });
-
     it('should handle templates with activeTools', () => {
       const templateWithTools = async (input: string) => ({
         inputs: [input],
         nextTemplate: undefined,
-        reset: undefined,
         activeTools: ['tool1', 'tool2', 'tool3'],
       });
 
@@ -123,7 +98,7 @@ describe('TemplateService', () => {
     it('should handle templates with missing properties', () => {
       const invalidTemplate = async (input: string) => ({
         inputs: [input],
-        // Missing nextTemplate, reset, activeTools
+        // Missing nextTemplate, activeTools
       });
 
       const testService = new TemplateService({ 'invalid': invalidTemplate });
