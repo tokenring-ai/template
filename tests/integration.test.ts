@@ -5,12 +5,12 @@ import {ChatService} from '@tokenring-ai/chat';
 import runChat from '@tokenring-ai/chat/runChat';
 import {ChatModelRegistry} from '@tokenring-ai/ai-client/ModelRegistry';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import listCommand from '../commands/template/list.js';
-import infoCommand from '../commands/template/info.js';
-import runCommand from '../commands/template/run.js';
-import TemplateService, {type TemplateResult} from '../TemplateService.js';
-import listTemplates from '../tools/listTemplates.js';
-import runTemplate from '../tools/runTemplate.js';
+import listCommand from '../commands/template/list.ts';
+import infoCommand from '../commands/template/info.ts';
+import runCommand from '../commands/template/run.ts';
+import TemplateService, {type TemplateResult} from '../TemplateService.ts';
+import listTemplates from '../tools/listTemplates.ts';
+import runTemplate from '../tools/runTemplate.ts';
 
 vi.mock('@tokenring-ai/chat/runChat', () => ({
   default: vi.fn(),

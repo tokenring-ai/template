@@ -1,6 +1,6 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import listTemplates from '../tools/listTemplates.js';
-import runTemplate from '../tools/runTemplate.js';
+import listTemplates from '../tools/listTemplates.ts';
+import runTemplate from '../tools/runTemplate.ts';
 
 describe('Template Tools', () => {
   beforeEach(() => {

@@ -5,7 +5,7 @@ import {z} from "zod";
 
 import agentCommands from "./commands.ts";
 import {TemplateConfigSchema} from "./index.ts";
-import packageJSON from './package.json' with {type: 'json'};
+import packageJSON from "./package.json" with {type: "json"};
 import TemplateService from "./TemplateService.ts";
 import tools from "./tools.ts";
 

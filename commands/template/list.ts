@@ -1,6 +1,6 @@
 import type {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import markdownList from "@tokenring-ai/utility/string/markdownList";
-import TemplateService from "../../TemplateService.js";
+import TemplateService from "../../TemplateService.ts";
 
 const inputSchema = {} as const satisfies AgentCommandInputSchema;
 

@@ -1,5 +1,5 @@
 import {beforeEach, describe, expect, it} from 'vitest';
-import TemplateService from '../TemplateService.js';
+import TemplateService from '../TemplateService.ts';
 
 describe('TemplateService', () => {
   let templateService: TemplateService;

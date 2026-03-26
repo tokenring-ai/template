@@ -1,6 +1,6 @@
 import type {AgentCommandInputSchema, AgentCommandInputType, TokenRingAgentCommand} from "@tokenring-ai/agent/types";
 import indent from "@tokenring-ai/utility/string/indent";
-import TemplateService from "../../TemplateService.js";
+import TemplateService from "../../TemplateService.ts";
 
 const inputSchema = {
   args: {},

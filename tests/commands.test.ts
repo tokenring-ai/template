@@ -5,10 +5,10 @@ import TokenRingApp from "@tokenring-ai/app";
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
 import {ChatService} from "@tokenring-ai/chat";
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import listCommand from '../commands/template/list.js';
-import infoCommand from '../commands/template/info.js';
-import runCommand from '../commands/template/run.js';
-import TemplateService from '../TemplateService.js';
+import listCommand from '../commands/template/list.ts';
+import infoCommand from '../commands/template/info.ts';
+import runCommand from '../commands/template/run.ts';
+import TemplateService from '../TemplateService.ts';
 
 const chatModelRegistry = new ChatModelRegistry();
 
