@@ -16,6 +16,7 @@ const packageConfigSchema = z.object({
 
 export default {
   name: packageJSON.name,
+  displayName: "Content Templates",
   version: packageJSON.version,
   description: packageJSON.description,
   install(app, config) {
