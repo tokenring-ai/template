@@ -1,12 +1,12 @@
 import {Agent} from '@tokenring-ai/agent';
 import createTestingAgent from '@tokenring-ai/agent/test/createTestingAgent';
+import {ChatModelRegistry} from '@tokenring-ai/ai-client/ModelRegistry';
 import createTestingApp from '@tokenring-ai/app/test/createTestingApp';
 import {ChatService} from '@tokenring-ai/chat';
 import runChat from '@tokenring-ai/chat/runChat';
-import {ChatModelRegistry} from '@tokenring-ai/ai-client/ModelRegistry';
 import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import listCommand from '../commands/template/list.ts';
 import infoCommand from '../commands/template/info.ts';
+import listCommand from '../commands/template/list.ts';
 import runCommand from '../commands/template/run.ts';
 import TemplateService, {type TemplateResult} from '../TemplateService.ts';
 import listTemplates from '../tools/listTemplates.ts';
