@@ -1,6 +1,6 @@
-import {Agent} from "@tokenring-ai/agent";
-import {AIResponse} from "@tokenring-ai/ai-client/client/AIChatClient";
-import {TokenRingService} from "@tokenring-ai/app/types";
+import type {Agent} from "@tokenring-ai/agent";
+import type {AIResponse} from "@tokenring-ai/ai-client/client/AIChatClient";
+import type {TokenRingService} from "@tokenring-ai/app/types";
 import {ChatService} from "@tokenring-ai/chat";
 import runChat from "@tokenring-ai/chat/runChat";
 import {getChatAnalytics} from "@tokenring-ai/chat/util/getChatAnalytics";
@@ -51,7 +51,6 @@ export default class TemplateService implements TokenRingService {
   getTemplateByName = this.templates.getItemByName;
   listTemplates = this.templates.getAllItemNames;
 
-
   constructor(templates: TemplateServiceOptions) {
     this.templates.registerAll(templates);
   }
@@ -60,11 +59,13 @@ export default class TemplateService implements TokenRingService {
    * Run a template with the given input
    */
   async runTemplate(
-    {templateName, input, visitedTemplates = [] as string[]}:
-    { templateName: string; input: string; visitedTemplates?: string[] },
+    {
+      templateName,
+      input,
+      visitedTemplates = [] as string[],
+    }: { templateName: string; input: string; visitedTemplates?: string[] },
     agent: Agent,
   ): Promise<TemplateResult> {
-
     if (!templateName) {
       throw new Error("Template name is required");
     }
@@ -75,7 +76,6 @@ export default class TemplateService implements TokenRingService {
       throw new Error(`Template not found: ${templateName}`);
     }
 
-
     const chatService = agent.requireServiceByType(ChatService);
 
     // Store original tool state for restoration
@@ -85,7 +85,6 @@ export default class TemplateService implements TokenRingService {
     try {
       // Execute the template function with the input
       const chatRequest = await template(input);
-
 
       // Handle activeTools option - save current tools and set new ones
       if (chatRequest.activeTools && Array.isArray(chatRequest.activeTools)) {
@@ -99,10 +98,9 @@ export default class TemplateService implements TokenRingService {
         );
       }
 
-
       const chatConfig = chatService.getChatConfig(agent);
 
-      let lastResult: AIResponse | null = null
+      let lastResult: AIResponse | null = null;
 
       for (const input of chatRequest.inputs ?? []) {
         // Run the chat with the generated request
@@ -111,28 +109,29 @@ export default class TemplateService implements TokenRingService {
         agent.infoMessage(`Input Complete:\n${getChatAnalytics(lastResult)}`);
 
         if (lastResult.finishReason !== "stop") {
-          throw new Error(`AI Chat did not stop as expected, Reason: ${ lastResult.finishReason }`);
+          throw new Error(
+            `AI Chat did not stop as expected, Reason: ${lastResult.finishReason}`,
+          );
         }
       }
-
 
       // Prepare the result object
       const result: TemplateResult = {
         ok: true,
-        output: lastResult?.text ?? "No output from AI."
+        output: lastResult?.text ?? "No output from AI.",
       };
 
       // Check if the template wants to run another template next
       if (chatRequest.nextTemplate) {
         // Prevent circular references
         if (visitedTemplates.includes(chatRequest.nextTemplate)) {
-          throw new Error(`Circular template reference detected: ${chatRequest.nextTemplate} has already been run in this chain.`);
+          throw new Error(
+            `Circular template reference detected: ${chatRequest.nextTemplate} has already been run in this chain.`,
+          );
         }
 
         // Log that we're running the next template
-        agent.infoMessage(
-          `Running next template: ${chatRequest.nextTemplate}`,
-        );
+        agent.infoMessage(`Running next template: ${chatRequest.nextTemplate}`);
 
         // Run the next template with the output of this template as input
         const nextTemplateResult = await this.runTemplate(

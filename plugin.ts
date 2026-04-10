@@ -1,5 +1,5 @@
 import {AgentCommandService} from "@tokenring-ai/agent";
-import {TokenRingPlugin} from "@tokenring-ai/app";
+import type {TokenRingPlugin} from "@tokenring-ai/app";
 import {ChatService} from "@tokenring-ai/chat";
 import {z} from "zod";
 
@@ -10,9 +10,8 @@ import TemplateService from "./TemplateService.ts";
 import tools from "./tools.ts";
 
 const packageConfigSchema = z.object({
-  templates: TemplateConfigSchema.optional()
+  templates: TemplateConfigSchema.optional(),
 });
-
 
 export default {
   name: packageJSON.name,
@@ -21,15 +20,15 @@ export default {
   description: packageJSON.description,
   install(app, config) {
     if (config.templates) {
-      app.waitForService(ChatService, chatService =>
-        chatService.addTools(tools)
+      app.waitForService(ChatService, (chatService) =>
+        chatService.addTools(tools),
       );
-      app.waitForService(AgentCommandService, agentCommandService =>
-        agentCommandService.addAgentCommands(agentCommands)
+      app.waitForService(AgentCommandService, (agentCommandService) =>
+        agentCommandService.addAgentCommands(agentCommands),
       );
 
       app.addServices(new TemplateService(config.templates));
     }
   },
-  config: packageConfigSchema
+  config: packageConfigSchema,
 } satisfies TokenRingPlugin<typeof packageConfigSchema>;
