@@ -1,5 +1,5 @@
 import type {Agent} from "@tokenring-ai/agent";
-import type {TokenRingToolDefinition, TokenRingToolJSONResult,} from "@tokenring-ai/chat/schema";
+import type {TokenRingToolDefinition, TokenRingToolResult} from "@tokenring-ai/chat/schema";
 import {z} from "zod";
 import TemplateService from "../TemplateService.ts";
 
@@ -12,16 +12,13 @@ const displayName = "Template/listTemplates";
 function execute(
   _args: z.output<typeof inputSchema>,
   agent: Agent,
-): TokenRingToolJSONResult<{ templates: string[] }> {
+): TokenRingToolResult {
   const templateRegistry: TemplateService =
     agent.requireServiceByType(TemplateService);
 
   const templates = templateRegistry.listTemplates();
 
-  return {
-    type: "json",
-    data: {templates},
-  };
+  return JSON.stringify(templates);
 }
 
 const description =

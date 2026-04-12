@@ -58,11 +58,13 @@ const result = await templateService.runTemplate(
 ```
 
 **Properties:**
+
 - `name: string` - Service name ("TemplateService")
 - `description: string` - Service description ("Provides a registry of prompt templates")
 - `templates: KeyedRegistry<TemplateFunction>` - Registry of template functions
 
 **Methods:**
+
 - `listTemplates(): string[]` - Returns an array of all registered template names
 - `getTemplateByName(name: string): TemplateFunction | undefined` - Retrieves a template function by name
 - `runTemplate({ templateName, input, visitedTemplates? }, agent): Promise<TemplateResult>` - Executes a template with the given input
@@ -206,6 +208,7 @@ Returns an array of all registered template names.
 Retrieves a template function by name.
 
 **Parameters:**
+
 - `name`: Name of the template to retrieve
 
 **Returns:** `TemplateFunction | undefined` - The template function or undefined if not found
@@ -215,6 +218,7 @@ Retrieves a template function by name.
 Executes a template with the given input.
 
 **Parameters:**
+
 - `templateName`: Name of the template to run
 - `input`: Input text for the template
 - `visitedTemplates`: Array to track template chain (internal use, optional)
@@ -223,6 +227,7 @@ Executes a template with the given input.
 **Returns:** `Promise<TemplateResult>` - Execution result
 
 **Throws:**
+
 - `Error` if template not found
 - `Error` if circular reference detected
 - `Error` if AI response does not complete successfully
@@ -239,6 +244,7 @@ Lists all available templates.
 **Returns:** `{ templates: string[] }`
 
 **Tool Definition:**
+
 ```typescript
 {
   name: "template_list",
@@ -250,6 +256,7 @@ Lists all available templates.
 ```
 
 **Usage Example:**
+
 ```typescript
 import { Agent } from "@tokenring-ai/agent";
 
@@ -262,12 +269,14 @@ console.log(result.data.templates); // ["summarize", "translateToFrench", ...]
 Runs a template with the given input.
 
 **Parameters:**
+
 - `templateName`: Name of the template to run
 - `input`: Input text for the template
 
 **Returns:** `{ output?: string, response?: any }`
 
 **Tool Definition:**
+
 ```typescript
 {
   name: "template_run",
@@ -282,6 +291,7 @@ Runs a template with the given input.
 ```
 
 **Usage Example:**
+
 ```typescript
 import { Agent } from "@tokenring-ai/agent";
 
@@ -301,11 +311,13 @@ The package provides three chat commands for template management:
 List all available templates.
 
 **Example:**
+
 ```
 /template list
 ```
 
 **Output:**
+
 ```
 Available templates:
 - summarize
@@ -318,15 +330,18 @@ Available templates:
 Run a template with optional input text.
 
 **Arguments:**
+
 - `templateName`: Name of the template to run
 - `input`: Optional input text for the template
 
 **Example:**
+
 ```
 /template run summarize This is the text to summarize
 ```
 
 **Output:**
+
 ```
 Template executed
 ```
@@ -336,14 +351,17 @@ Template executed
 Show information about a specific template.
 
 **Arguments:**
+
 - `templateName`: Name of the template to get info about
 
 **Example:**
+
 ```
 /template info summarize
 ```
 
 **Output:**
+
 ```
 Template: summarize
 Usage:
@@ -377,6 +395,7 @@ const config = {
 ```
 
 **Schema Definition:**
+
 ```typescript
 z.record(
   z.string(),
@@ -418,6 +437,7 @@ The package automatically integrates with TokenRing applications via the plugin 
 - **TemplateService**: Manages template registry and execution
 
 **Plugin Registration:**
+
 ```typescript
 import { TokenRingAppConfig } from "@tokenring-ai/app";
 import templatePlugin from "@tokenring-ai/template";
@@ -504,7 +524,7 @@ export async function myCustomTemplate(input: string): Promise<TemplateChatReque
 }
 ```
 
-2. Register it in your configuration:
+1. Register it in your configuration:
 
 ```typescript
 export default {
@@ -514,7 +534,7 @@ export default {
 }
 ```
 
-3. Use it via the TemplateService:
+1. Use it via the TemplateService:
 
 ```typescript
 const result = await templateService.runTemplate(

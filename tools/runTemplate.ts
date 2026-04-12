@@ -1,5 +1,5 @@
 import type Agent from "@tokenring-ai/agent/Agent";
-import type {TokenRingToolDefinition, TokenRingToolJSONResult,} from "@tokenring-ai/chat/schema";
+import type {TokenRingToolDefinition, TokenRingToolResult} from "@tokenring-ai/chat/schema";
 import {z} from "zod";
 import TemplateService from "../TemplateService.ts";
 
@@ -13,10 +13,7 @@ async function execute(
   {templateName, input}: z.output<typeof inputSchema>,
   agent: Agent,
 ): Promise<
-  TokenRingToolJSONResult<{
-    output?: string;
-    response?: any;
-  }>
+  TokenRingToolResult
 > {
   const templateRegistry: TemplateService =
     agent.requireServiceByType(TemplateService);
@@ -32,13 +29,10 @@ async function execute(
     throw new Error(result.error || "Template execution failed");
   }
 
-  return {
-    type: "json",
-    data: {
-      output: result.output,
-      response: result.response,
-    },
-  };
+  return JSON.stringify({
+    output: result.output,
+    response: result.response
+  });
 }
 
 const description =
