@@ -5,6 +5,7 @@ import {ChatService} from "@tokenring-ai/chat";
 import runChat from "@tokenring-ai/chat/runChat";
 import {getChatAnalytics} from "@tokenring-ai/chat/util/getChatAnalytics";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
+import markdownList from "@tokenring-ai/utility/string/markdownList";
 import {z} from "zod";
 
 export const TemplateChatRequestSchema = z.object({
@@ -106,7 +107,7 @@ export default class TemplateService implements TokenRingService {
         // Run the chat with the generated request
         lastResult = await runChat({input, chatConfig, agent});
 
-        agent.infoMessage(`Input Complete:\n${getChatAnalytics(lastResult)}`);
+        agent.infoMessage(`Input Complete:\n${markdownList(getChatAnalytics(lastResult))}`);
 
         if (lastResult.finishReason !== "stop") {
           throw new Error(
