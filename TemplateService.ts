@@ -49,11 +49,11 @@ export default class TemplateService implements TokenRingService {
    * Map of template names to template functions
    */
   templates = new KeyedRegistry<TemplateFunction>();
-  getTemplateByName = this.templates.getItemByName;
-  listTemplates = this.templates.getAllItemNames;
+  getTemplateByName = this.templates.get;
+  listTemplates = this.templates.keysArray;
 
   constructor(templates: TemplateServiceOptions) {
-    this.templates.registerAll(templates);
+    this.templates.setAll(templates);
   }
 
   /**
@@ -71,7 +71,7 @@ export default class TemplateService implements TokenRingService {
       throw new Error("Template name is required");
     }
 
-    const template = this.templates.getItemByName(templateName);
+    const template = this.templates.get(templateName);
 
     if (!template) {
       throw new Error(`Template not found: ${templateName}`);

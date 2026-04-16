@@ -21,7 +21,7 @@ export default {
   install(app, config) {
     if (config.templates) {
       app.waitForService(ChatService, (chatService) =>
-        chatService.addTools(tools),
+        chatService.addTools(...tools),
       );
       app.waitForService(AgentCommandService, (agentCommandService) =>
         agentCommandService.addAgentCommands(agentCommands),
