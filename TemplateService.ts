@@ -1,35 +1,35 @@
-import type {Agent} from "@tokenring-ai/agent";
-import type {AIResponse} from "@tokenring-ai/ai-client/client/AIChatClient";
-import type {TokenRingService} from "@tokenring-ai/app/types";
-import {ChatService} from "@tokenring-ai/chat";
+import type { Agent } from "@tokenring-ai/agent";
+import type { AIResponse } from "@tokenring-ai/ai-client/client/AIChatClient";
+import type { TokenRingService } from "@tokenring-ai/app/types";
+import { ChatService } from "@tokenring-ai/chat";
 import runChat from "@tokenring-ai/chat/runChat";
-import {getChatAnalytics} from "@tokenring-ai/chat/util/getChatAnalytics";
+import { getChatAnalytics } from "@tokenring-ai/chat/util/getChatAnalytics";
 import KeyedRegistry from "@tokenring-ai/utility/registry/KeyedRegistry";
 import markdownList from "@tokenring-ai/utility/string/markdownList";
-import {z} from "zod";
+import { z } from "zod";
 
 export const TemplateChatRequestSchema = z.object({
   inputs: z.array(z.string()),
   // Name of the next template to run, if any
-  nextTemplate: z.string().optional(),
+  nextTemplate: z.string().exactOptional(),
   // Tools to enable during this template execution
-  activeTools: z.array(z.string()).optional(),
+  activeTools: z.array(z.string()).exactOptional(),
 });
 
 export type TemplateResult = {
   ok: boolean;
-  output?: string;
+  output?: string | undefined;
   response?: any;
-  error?: string;
+  error?: string | undefined;
   nextTemplateResult?: TemplateResult;
 };
 
 export const TemplateResultSchema: z.ZodType<TemplateResult> = z.object({
   ok: z.boolean(),
-  output: z.string().optional(),
-  response: z.any().optional(),
-  error: z.string().optional(),
-  nextTemplateResult: z.lazy(() => TemplateResultSchema).optional(),
+  output: z.string().exactOptional(),
+  response: z.any().exactOptional(),
+  error: z.string().exactOptional(),
+  nextTemplateResult: z.lazy(() => TemplateResultSchema).exactOptional(),
 });
 
 export type TemplateChatRequest = z.infer<typeof TemplateChatRequestSchema>;
@@ -60,11 +60,7 @@ export default class TemplateService implements TokenRingService {
    * Run a template with the given input
    */
   async runTemplate(
-    {
-      templateName,
-      input,
-      visitedTemplates = [] as string[],
-    }: { templateName: string; input: string; visitedTemplates?: string[] },
+    { templateName, input, visitedTemplates = [] as string[] }: { templateName: string; input: string; visitedTemplates?: string[] },
     agent: Agent,
   ): Promise<TemplateResult> {
     if (!templateName) {
@@ -94,9 +90,7 @@ export default class TemplateService implements TokenRingService {
         chatService.setEnabledTools(chatRequest.activeTools, agent);
 
         toolsChanged = true;
-        agent.infoMessage(
-          `Set active tools for template: ${chatRequest.activeTools.join(", ")}`,
-        );
+        agent.infoMessage(`Set active tools for template: ${chatRequest.activeTools.join(", ")}`);
       }
 
       const chatConfig = chatService.getChatConfig(agent);
@@ -105,14 +99,12 @@ export default class TemplateService implements TokenRingService {
 
       for (const input of chatRequest.inputs ?? []) {
         // Run the chat with the generated request
-        lastResult = await runChat({input, chatConfig, agent});
+        lastResult = await runChat({ input, chatConfig, agent });
 
         agent.infoMessage(`Input Complete:\n${markdownList(getChatAnalytics(lastResult))}`);
 
         if (lastResult.finishReason !== "stop") {
-          throw new Error(
-            `AI Chat did not stop as expected, Reason: ${lastResult.finishReason}`,
-          );
+          throw new Error(`AI Chat did not stop as expected, Reason: ${lastResult.finishReason}`);
         }
       }
 
@@ -126,9 +118,7 @@ export default class TemplateService implements TokenRingService {
       if (chatRequest.nextTemplate) {
         // Prevent circular references
         if (visitedTemplates.includes(chatRequest.nextTemplate)) {
-          throw new Error(
-            `Circular template reference detected: ${chatRequest.nextTemplate} has already been run in this chain.`,
-          );
+          throw new Error(`Circular template reference detected: ${chatRequest.nextTemplate} has already been run in this chain.`);
         }
 
         // Log that we're running the next template
@@ -157,9 +147,7 @@ export default class TemplateService implements TokenRingService {
       if (toolsChanged && originalTools !== null) {
         const chatService = agent.requireServiceByType(ChatService);
         chatService.setEnabledTools(originalTools, agent);
-        agent.infoMessage(
-          `Restored original tools: ${originalTools.join(", ") || "none"}`,
-        );
+        agent.infoMessage(`Restored original tools: ${originalTools.join(", ") || "none"}`);
       }
     }
   }

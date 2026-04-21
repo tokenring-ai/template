@@ -1,6 +1,6 @@
 import type Agent from "@tokenring-ai/agent/Agent";
-import type {TokenRingToolDefinition, TokenRingToolResult} from "@tokenring-ai/chat/schema";
-import {z} from "zod";
+import type { TokenRingToolDefinition, TokenRingToolResult } from "@tokenring-ai/chat/schema";
+import { z } from "zod";
 import TemplateService from "../TemplateService.ts";
 
 const name = "template_run";
@@ -9,21 +9,12 @@ const displayName = "Template/runTemplate";
 /**
  * Runs a template with the given input via the tool interface
  */
-async function execute(
-  {templateName, input}: z.output<typeof inputSchema>,
-  agent: Agent,
-): Promise<
-  TokenRingToolResult
-> {
-  const templateRegistry: TemplateService =
-    agent.requireServiceByType(TemplateService);
+async function execute({ templateName, input }: z.output<typeof inputSchema>, agent: Agent): Promise<TokenRingToolResult> {
+  const templateRegistry: TemplateService = agent.requireServiceByType(TemplateService);
 
   agent.infoMessage(`[${name}] Running template: ${templateName}`);
 
-  const result = await templateRegistry.runTemplate(
-    {templateName, input},
-    agent,
-  );
+  const result = await templateRegistry.runTemplate({ templateName, input }, agent);
 
   if (!result.ok) {
     throw new Error(result.error || "Template execution failed");
@@ -31,12 +22,11 @@ async function execute(
 
   return JSON.stringify({
     output: result.output,
-    response: result.response
+    response: result.response,
   });
 }
 
-const description =
-  "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.";
+const description = "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.";
 
 const inputSchema = z.object({
   templateName: z.string().describe("The name of the template to run."),
