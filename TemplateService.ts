@@ -88,7 +88,7 @@ export default class TemplateService implements TokenRingService {
       const chatRequest = await template(input);
 
       // Handle activeTools option - save current tools and set new ones
-      if (chatRequest.activeTools && Array.isArray(chatRequest.activeTools)) {
+      if (chatRequest.activeTools) {
         originalTools = chatService.getEnabledTools(agent);
 
         chatService.setEnabledTools(chatRequest.activeTools, agent);
