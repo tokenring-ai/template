@@ -1,32 +1,32 @@
-import {Agent} from '@tokenring-ai/agent';
-import createTestingAgent from '@tokenring-ai/agent/test/createTestingAgent';
-import {ChatModelRegistry} from '@tokenring-ai/ai-client/ModelRegistry';
-import createTestingApp from '@tokenring-ai/app/test/createTestingApp';
-import {ChatService} from '@tokenring-ai/chat';
-import runChat from '@tokenring-ai/chat/runChat';
-import {afterEach, beforeEach, describe, expect, it, vi} from 'vitest';
-import infoCommand from '../commands/template/info.ts';
-import listCommand from '../commands/template/list.ts';
-import runCommand from '../commands/template/run.ts';
-import TemplateService, {type TemplateResult} from '../TemplateService.ts';
-import listTemplates from '../tools/listTemplates.ts';
-import runTemplate from '../tools/runTemplate.ts';
+import { Agent } from "@tokenring-ai/agent";
+import createTestingAgent from "@tokenring-ai/agent/test/createTestingAgent";
+import { ChatModelRegistry } from "@tokenring-ai/ai-client/ModelRegistry";
+import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
+import { ChatService } from "@tokenring-ai/chat";
+import runChat from "@tokenring-ai/chat/runChat";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import infoCommand from "../commands/template/info.ts";
+import listCommand from "../commands/template/list.ts";
+import runCommand from "../commands/template/run.ts";
+import TemplateService, { type TemplateResult } from "../TemplateService.ts";
+import listTemplates from "../tools/listTemplates.ts";
+import runTemplate from "../tools/runTemplate.ts";
 
-vi.mock('@tokenring-ai/chat/runChat', () => ({
+vi.mock("@tokenring-ai/chat/runChat", () => ({
   default: vi.fn(),
 }));
 
 const chatModelRegistry = new ChatModelRegistry();
 
 // Helper to create mock chat response
-const createMockResponse = (text = 'Test output'): any => ({
+const createMockResponse = (text = "Test output"): any => ({
   text,
-  finishReason: 'stop',
+  finishReason: "stop",
   usage: { inputTokens: 10, outputTokens: 20, totalTokens: 30 },
   totalUsage: { inputTokens: 10, cachedInputTokens: 0, outputTokens: 20, totalTokens: 30 },
 });
 
-describe('Template Integration Tests', () => {
+describe("Template Integration Tests", () => {
   let mockAgent: Agent;
   let mockChatService: ChatService;
   let mockTemplateService: TemplateService;
@@ -34,30 +34,30 @@ describe('Template Integration Tests', () => {
   let mockRunChat: ReturnType<typeof vi.fn>;
 
   const setupMockTemplates = () => ({
-    'simple-template': async (input: string) => ({
+    "simple-template": async (input: string) => ({
       inputs: [input],
       nextTemplate: undefined,
       activeTools: undefined,
     }),
-    'complex-template': async (input: string) => ({
+    "complex-template": async (input: string) => ({
       inputs: [input, `Processed: ${input}`],
-      nextTemplate: 'final-template',
+      nextTemplate: "final-template",
       activeTools: undefined,
     }),
-    'final-template': async (input: string) => ({
+    "final-template": async (input: string) => ({
       inputs: [input],
       nextTemplate: undefined,
       activeTools: undefined,
     }),
-    'error-template': async (input: string) => {
-      throw new Error('Template execution error');
+    "error-template": async (input: string) => {
+      throw new Error("Template execution error");
     },
   });
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockRunChat = vi.mocked(runChat);
-    
+
     const mockTemplates = setupMockTemplates();
     mockTemplateService = new TemplateService(mockTemplates);
 
@@ -67,7 +67,7 @@ describe('Template Integration Tests', () => {
     mockChatService = new ChatService(mockApp, {
       defaultModels: [],
       agentDefaults: {
-        model: 'auto',
+        model: "auto",
         autoCompact: true,
         enabledTools: [],
         maxSteps: 30,
@@ -82,51 +82,51 @@ describe('Template Integration Tests', () => {
 
     mockAgent = createTestingAgent(mockApp);
 
-    vi.mocked(runChat).mockResolvedValue(createMockResponse('Integration test output'));
+    vi.mocked(runChat).mockResolvedValue(createMockResponse("Integration test output"));
   });
 
   afterEach(() => {
     vi.clearAllMocks();
   });
 
-  describe('End-to-End Template Execution', () => {
-    it('should execute a simple template end-to-end', async () => {
+  describe("End-to-End Template Execution", () => {
+    it("should execute a simple template end-to-end", async () => {
       // Mock the ChatService methods that TemplateService needs
       const mockGetChatConfig = vi.fn().mockReturnValue({
         context: { initial: [], followUp: [] }
       });
       const mockInfoMessage = vi.fn();
-      
-      vi.spyOn(mockChatService, 'getChatConfig').mockImplementation(mockGetChatConfig);
-      vi.spyOn(mockAgent, 'infoMessage').mockImplementation(mockInfoMessage);
+
+      vi.spyOn(mockChatService, "getChatConfig").mockImplementation(mockGetChatConfig);
+      vi.spyOn(mockAgent, "infoMessage").mockImplementation(mockInfoMessage);
 
       const result = await mockTemplateService.runTemplate({
-        templateName: 'simple-template',
-        input: 'Test input',
+        templateName: "simple-template",
+        input: "Test input",
       }, mockAgent);
 
       expect(result.ok).toBe(true);
-      expect(result.output).toBe('Integration test output');
-      
+      expect(result.output).toBe("Integration test output");
+
       expect(runChat).toHaveBeenCalledWith({
-        input: 'Test input',
+        input: "Test input",
         chatConfig: expect.any(Object),
         agent: mockAgent
       });
     });
 
-    it('should handle template chaining end-to-end', async () => {
+    it("should handle template chaining end-to-end", async () => {
       const mockGetChatConfig = vi.fn().mockReturnValue({
         context: { initial: [], followUp: [] }
       });
       const mockInfoMessage = vi.fn();
-      
-      vi.spyOn(mockChatService, 'getChatConfig').mockImplementation(mockGetChatConfig);
-      vi.spyOn(mockAgent, 'infoMessage').mockImplementation(mockInfoMessage);
+
+      vi.spyOn(mockChatService, "getChatConfig").mockImplementation(mockGetChatConfig);
+      vi.spyOn(mockAgent, "infoMessage").mockImplementation(mockInfoMessage);
 
       const result = await mockTemplateService.runTemplate({
-        templateName: 'complex-template',
-        input: 'Initial input',
+        templateName: "complex-template",
+        input: "Initial input",
       }, mockAgent);
 
       expect(result.ok).toBe(true);
@@ -136,132 +136,132 @@ describe('Template Integration Tests', () => {
       expect(runChat).toHaveBeenCalledTimes(3);
     });
 
-    it('should handle template errors gracefully', async () => {
+    it("should handle template errors gracefully", async () => {
       const mockInfoMessage = vi.fn();
-      vi.spyOn(mockAgent, 'infoMessage').mockImplementation(mockInfoMessage);
+      vi.spyOn(mockAgent, "infoMessage").mockImplementation(mockInfoMessage);
 
       await expect(
         mockTemplateService.runTemplate({
-          templateName: 'error-template',
-          input: 'Test input',
+          templateName: "error-template",
+          input: "Test input",
         }, mockAgent)
-      ).rejects.toThrow('Template execution error');
+      ).rejects.toThrow("Template execution error");
     });
   });
 
-  describe('Tool Integration', () => {
-    it('should integrate listTemplates tool with service', async () => {
+  describe("Tool Integration", () => {
+    it("should integrate listTemplates tool with service", async () => {
       const result = await listTemplates.execute({}, mockAgent);
 
-      expect(result.type).toBe('json');
-      expect(result.data.templates).toContain('simple-template');
-      expect(result.data.templates).toContain('complex-template');
-      expect(result.data.templates).toContain('final-template');
+      expect(result.type).toBe("json");
+      expect(result.data.templates).toContain("simple-template");
+      expect(result.data.templates).toContain("complex-template");
+      expect(result.data.templates).toContain("final-template");
     });
 
-    it('should integrate runTemplate tool with service', async () => {
+    it("should integrate runTemplate tool with service", async () => {
       const mockGetChatConfig = vi.fn().mockReturnValue({
         context: { initial: [], followUp: [] }
       });
       const mockInfoMessage = vi.fn();
-      
-      vi.spyOn(mockChatService, 'getChatConfig').mockImplementation(mockGetChatConfig);
-      vi.spyOn(mockAgent, 'infoMessage').mockImplementation(mockInfoMessage);
-      
-      vi.mocked(runChat).mockResolvedValueOnce(createMockResponse('Tool test output'));
+
+      vi.spyOn(mockChatService, "getChatConfig").mockImplementation(mockGetChatConfig);
+      vi.spyOn(mockAgent, "infoMessage").mockImplementation(mockInfoMessage);
+
+      vi.mocked(runChat).mockResolvedValueOnce(createMockResponse("Tool test output"));
 
       const result = await runTemplate.execute({
-        templateName: 'simple-template',
-        input: 'Tool test input',
+        templateName: "simple-template",
+        input: "Tool test input",
       }, mockAgent);
 
-      expect(result.type).toBe('json');
-      expect(result.data.output).toBe('Tool test output');
+      expect(result.type).toBe("json");
+      expect(result.data.output).toBe("Tool test output");
     });
 
-    it('should handle tool errors consistently', async () => {
+    it("should handle tool errors consistently", async () => {
       await expect(
         runTemplate.execute({
-          templateName: 'non-existent',
-          input: 'Test input',
+          templateName: "non-existent",
+          input: "Test input",
         }, mockAgent)
-      ).rejects.toThrow('Template not found: non-existent');
+      ).rejects.toThrow("Template not found: non-existent");
     });
   });
 
-  describe('Command Integration', () => {
-    it('should integrate list command with the service', async () => {
-      const result = await listCommand.execute({agent: mockAgent} as any);
-      
-      expect(result).toContain('Available templates');
-      expect(result).toContain('simple-template');
+  describe("Command Integration", () => {
+    it("should integrate list command with the service", async () => {
+      const result = await listCommand.execute({ agent: mockAgent } as any);
+
+      expect(result).toContain("Available templates");
+      expect(result).toContain("simple-template");
     });
 
-    it('should integrate run command with the service', async () => {
+    it("should integrate run command with the service", async () => {
       const mockGetChatConfig = vi.fn().mockReturnValue({
         context: { initial: [], followUp: [] }
       });
       const mockInfoMessage = vi.fn();
-      
-      vi.spyOn(mockChatService, 'getChatConfig').mockImplementation(mockGetChatConfig);
-      vi.spyOn(mockAgent, 'infoMessage').mockImplementation(mockInfoMessage);
-      
-      vi.mocked(runChat).mockResolvedValueOnce(createMockResponse('Command test output'));
+
+      vi.spyOn(mockChatService, "getChatConfig").mockImplementation(mockGetChatConfig);
+      vi.spyOn(mockAgent, "infoMessage").mockImplementation(mockInfoMessage);
+
+      vi.mocked(runChat).mockResolvedValueOnce(createMockResponse("Command test output"));
 
       const result = await runCommand.execute({
-        positionals: { templateName: 'simple-template' },
-        remainder: 'command input',
+        positionals: { templateName: "simple-template" },
+        remainder: "command input",
         agent: mockAgent
       }, mockAgent);
 
-      expect(result).toBe('Template executed');
+      expect(result).toBe("Template executed");
       expect(runChat).toHaveBeenCalledWith({
-        input: 'command input',
+        input: "command input",
         chatConfig: expect.any(Object),
         agent: mockAgent
       });
     });
 
-    it('should integrate info command with the service', async () => {
+    it("should integrate info command with the service", async () => {
       const result = await infoCommand.execute({
-        positionals: { templateName: 'simple-template' },
+        positionals: { templateName: "simple-template" },
         agent: mockAgent
       }, mockAgent);
 
-      expect(result).toContain('Template: simple-template');
+      expect(result).toContain("Template: simple-template");
     });
 
-    it('should handle command errors gracefully', async () => {
+    it("should handle command errors gracefully", async () => {
       await expect(
         runCommand.execute({
-          positionals: { templateName: 'non-existent-template' },
-          remainder: 'input',
+          positionals: { templateName: "non-existent-template" },
+          remainder: "input",
           agent: mockAgent
         }, mockAgent)
-      ).rejects.toThrow('Template not found: non-existent-template');
+      ).rejects.toThrow("Template not found: non-existent-template");
     });
   });
 
-  describe('Context Management Integration', () => {
-    it('should manage tools context across template execution', async () => {
+  describe("Context Management Integration", () => {
+    it("should manage tools context across template execution", async () => {
       const templatesWithTools = {
-        'tools-test': async (input: string) => ({
+        "tools-test": async (input: string) => ({
           inputs: [input],
           nextTemplate: undefined,
-          activeTools: ['tool1', 'tool2', 'tool3'],
+          activeTools: ["tool1", "tool2", "tool3"],
         }),
       };
 
       const serviceWithTools = new TemplateService(templatesWithTools);
       const testApp = createTestingApp();
       testApp.addServices(serviceWithTools);
-      
+
       const mockChatServiceWithTools = new ChatService(testApp, {
         defaultModels: [],
         agentDefaults: {
-          model: 'auto',
+          model: "auto",
           autoCompact: true,
-          enabledTools: ['default-tool'],
+          enabledTools: ["default-tool"],
           maxSteps: 30,
           context: {
             initial: [],
@@ -273,21 +273,23 @@ describe('Template Integration Tests', () => {
       testApp.addServices(chatModelRegistry);
 
       const testAgent = createTestingAgent(testApp);
-      
+
       // Mock the ChatService methods
-      const mockEnabledTools = ['default-tool'];
-      vi.spyOn(mockChatServiceWithTools, 'getEnabledTools').mockReturnValue(mockEnabledTools);
-      vi.spyOn(mockChatServiceWithTools, 'setEnabledTools').mockImplementation(() => {});
-      vi.spyOn(mockChatServiceWithTools, 'getChatConfig').mockReturnValue({
+      const mockEnabledTools = ["default-tool"];
+      vi.spyOn(mockChatServiceWithTools, "getEnabledTools").mockReturnValue(mockEnabledTools);
+      vi.spyOn(mockChatServiceWithTools, "setEnabledTools").mockImplementation(() => {
+      });
+      vi.spyOn(mockChatServiceWithTools, "getChatConfig").mockReturnValue({
         context: { initial: [], followUp: [] }
       });
-      vi.spyOn(testAgent, 'infoMessage').mockImplementation(() => {});
+      vi.spyOn(testAgent, "infoMessage").mockImplementation(() => {
+      });
 
-      vi.mocked(runChat).mockResolvedValueOnce(createMockResponse('Tools test output'));
+      vi.mocked(runChat).mockResolvedValueOnce(createMockResponse("Tools test output"));
 
       await serviceWithTools.runTemplate({
-        templateName: 'tools-test',
-        input: 'Context test input',
+        templateName: "tools-test",
+        input: "Context test input",
       }, testAgent);
 
       // Verify tools were set and restored
@@ -295,74 +297,74 @@ describe('Template Integration Tests', () => {
     });
   });
 
-  describe('Error Handling Integration', () => {
-    it('should handle partial failures gracefully', async () => {
+  describe("Error Handling Integration", () => {
+    it("should handle partial failures gracefully", async () => {
       const mockGetChatConfig = vi.fn().mockReturnValue({
         context: { initial: [], followUp: [] }
       });
       const mockInfoMessage = vi.fn();
-      
-      vi.spyOn(mockChatService, 'getChatConfig').mockImplementation(mockGetChatConfig);
-      vi.spyOn(mockAgent, 'infoMessage').mockImplementation(mockInfoMessage);
-      
+
+      vi.spyOn(mockChatService, "getChatConfig").mockImplementation(mockGetChatConfig);
+      vi.spyOn(mockAgent, "infoMessage").mockImplementation(mockInfoMessage);
+
       vi.mocked(runChat)
-        .mockResolvedValueOnce(createMockResponse('First output'))
-        .mockRejectedValueOnce(new Error('Second call failed'));
+        .mockResolvedValueOnce(createMockResponse("First output"))
+        .mockRejectedValueOnce(new Error("Second call failed"));
 
       await expect(
         mockTemplateService.runTemplate({
-          templateName: 'complex-template',
-          input: 'Test input',
+          templateName: "complex-template",
+          input: "Test input",
         }, mockAgent)
-      ).rejects.toThrow('Second call failed');
+      ).rejects.toThrow("Second call failed");
 
       expect(runChat).toHaveBeenCalledTimes(2);
     });
 
-    it('should maintain service state after errors', async () => {
+    it("should maintain service state after errors", async () => {
       const mockGetChatConfig = vi.fn().mockReturnValue({
         context: { initial: [], followUp: [] }
       });
       const mockInfoMessage = vi.fn();
-      
-      vi.spyOn(mockChatService, 'getChatConfig').mockImplementation(mockGetChatConfig);
-      vi.spyOn(mockAgent, 'infoMessage').mockImplementation(mockInfoMessage);
-      
+
+      vi.spyOn(mockChatService, "getChatConfig").mockImplementation(mockGetChatConfig);
+      vi.spyOn(mockAgent, "infoMessage").mockImplementation(mockInfoMessage);
+
       vi.mocked(runChat).mockClear();
-      vi.mocked(runChat).mockRejectedValueOnce(new Error('Test error'));
+      vi.mocked(runChat).mockRejectedValueOnce(new Error("Test error"));
 
       await expect(
         mockTemplateService.runTemplate({
-          templateName: 'simple-template',
-          input: 'Test input',
+          templateName: "simple-template",
+          input: "Test input",
         }, mockAgent)
-      ).rejects.toThrow('Test error');
+      ).rejects.toThrow("Test error");
 
       const templates = mockTemplateService.listTemplates();
-      expect(templates).toContain('simple-template');
+      expect(templates).toContain("simple-template");
     });
   });
 
-  describe('Performance Integration', () => {
-    it('should handle concurrent template execution', async () => {
+  describe("Performance Integration", () => {
+    it("should handle concurrent template execution", async () => {
       const mockGetChatConfig = vi.fn().mockReturnValue({
         context: { initial: [], followUp: [] }
       });
       const mockInfoMessage = vi.fn();
-      
-      vi.spyOn(mockChatService, 'getChatConfig').mockImplementation(mockGetChatConfig);
-      vi.spyOn(mockAgent, 'infoMessage').mockImplementation(mockInfoMessage);
-      
-      vi.mocked(runChat).mockResolvedValue(createMockResponse('Concurrent output'));
+
+      vi.spyOn(mockChatService, "getChatConfig").mockImplementation(mockGetChatConfig);
+      vi.spyOn(mockAgent, "infoMessage").mockImplementation(mockInfoMessage);
+
+      vi.mocked(runChat).mockResolvedValue(createMockResponse("Concurrent output"));
 
       const promises: Array<Promise<TemplateResult>> = [
         mockTemplateService.runTemplate({
-          templateName: 'simple-template',
-          input: 'Concurrent input 1',
+          templateName: "simple-template",
+          input: "Concurrent input 1",
         }, mockAgent),
         mockTemplateService.runTemplate({
-          templateName: 'simple-template',
-          input: 'Concurrent input 2',
+          templateName: "simple-template",
+          input: "Concurrent input 2",
         }, mockAgent),
       ];
 
@@ -370,8 +372,8 @@ describe('Template Integration Tests', () => {
 
       expect(results[0].ok).toBe(true);
       expect(results[1].ok).toBe(true);
-      expect(results[0].output).toBe('Concurrent output');
-      expect(results[1].output).toBe('Concurrent output');
+      expect(results[0].output).toBe("Concurrent output");
+      expect(results[1].output).toBe("Concurrent output");
     });
   });
 });

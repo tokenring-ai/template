@@ -1,10 +1,14 @@
 # @tokenring-ai/template
 
-The Template package provides a powerful registry system for running reusable AI-powered prompt templates by name. It enables users to accelerate repetitive tasks such as translation, content generation, summarization, and complex multi-step workflows through template chaining.
+The Template package provides a powerful registry system for running reusable AI-powered prompt templates by name. It
+enables users to accelerate repetitive tasks such as translation, content generation, summarization, and complex
+multi-step workflows through template chaining.
 
 ## Overview
 
-The `@tokenring-ai/template` package provides a comprehensive system for managing and executing reusable AI prompt templates. It enables users to accelerate repetitive tasks through template chaining, tool management, and seamless integration with the TokenRing ecosystem via plugin architecture, chat commands, and tools.
+The `@tokenring-ai/template` package provides a comprehensive system for managing and executing reusable AI prompt
+templates. It enables users to accelerate repetitive tasks through template chaining, tool management, and seamless
+integration with the TokenRing ecosystem via plugin architecture, chat commands, and tools.
 
 ## Key Features
 
@@ -14,7 +18,8 @@ The `@tokenring-ai/template` package provides a comprehensive system for managin
 - **Multiple Inputs**: Handle arrays of inputs within a single template execution
 - **Tool Integration**: Automatic tool and command registration with TokenRing applications
 - **Error Handling**: Comprehensive error handling with circular reference detection
-- **Command System**: Interactive chat commands (`/template list`, `/template run`, `/template info`) for template management
+- **Command System**: Interactive chat commands (`/template list`, `/template run`, `/template info`) for template
+  management
 - **Circular Reference Detection**: Prevents infinite template loops
 - **Tool State Restoration**: Automatically restores original tool states after template execution
 
@@ -39,7 +44,7 @@ export default {
 The central service that manages template registration and execution. Implements the `TokenRingService` interface.
 
 ```typescript
-import { TemplateService } from "@tokenring-ai/template";
+import {TemplateService} from "@tokenring-ai/template";
 
 // Access via agent
 const templateService = agent.requireServiceByType(TemplateService);
@@ -67,7 +72,8 @@ const result = await templateService.runTemplate(
 
 - `listTemplates(): string[]` - Returns an array of all registered template names
 - `getTemplateByName(name: string): TemplateFunction | undefined` - Retrieves a template function by name
-- `runTemplate({ templateName, input, visitedTemplates? }, agent): Promise<TemplateResult>` - Executes a template with the given input
+- `runTemplate({ templateName, input, visitedTemplates? }, agent): Promise<TemplateResult>` - Executes a template with
+  the given input
 
 ### Template Function Structure
 
@@ -280,13 +286,21 @@ Runs a template with the given input.
 ```typescript
 {
   name: "template_run",
-  displayName: "Template/runTemplate",
-  description: "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.",
-  inputSchema: z.object({
+    displayName
+:
+  "Template/runTemplate",
+    description
+:
+  "Run a template with the given input. Templates are predefined prompt patterns that generate AI requests.",
+    inputSchema
+:
+  z.object({
     templateName: z.string().describe("The name of the template to run."),
     input: z.string().describe("The input to pass to the template."),
   }),
-  execute: ({templateName, input}, agent) => Promise<{ type: "json", data: { output?: string, response?: any } }>
+    execute
+:
+  ({ templateName, input }, agent) => Promise<{ type: "json", data: { output?: string, response?: any } }>
 }
 ```
 
@@ -370,7 +384,8 @@ Usage:
 
 ## Configuration
 
-Templates are configured via the TokenRing configuration system. The configuration schema is defined as `TemplateConfigSchema` and is automatically validated.
+Templates are configured via the TokenRing configuration system. The configuration schema is defined as
+`TemplateConfigSchema` and is automatically validated.
 
 ### Configuration Schema
 
@@ -424,7 +439,8 @@ export default {
 }
 ```
 
-**Note:** The plugin only registers services and tools when `config.templates` is provided. If no templates are configured, the plugin will not add any services or commands.
+**Note:** The plugin only registers services and tools when `config.templates` is provided. If no templates are
+configured, the plugin will not add any services or commands.
 
 ## Integration with TokenRing Ecosystem
 
