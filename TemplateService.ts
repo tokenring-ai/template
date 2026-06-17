@@ -19,7 +19,7 @@ export const TemplateChatRequestSchema = z.object({
 export type TemplateResult = {
   ok: boolean;
   output?: string | undefined;
-  response?: any;
+  response?: unknown;
   error?: string | undefined;
   nextTemplateResult?: TemplateResult;
 };
