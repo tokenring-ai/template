@@ -1,8 +1,8 @@
 import { Agent } from "@tokenring-ai/agent";
-import createTestingAgent from "@tokenring-ai/agent/test/createTestingAgent";
+import createTestingAgent from "@tokenring-ai/agent/test/createTestingAgent.test";
 import { ChatModelRegistry } from "@tokenring-ai/ai-client/ModelRegistry";
 import TokenRingApp from "@tokenring-ai/app";
-import createTestingApp from "@tokenring-ai/app/test/createTestingApp";
+import createTestingApp from "@tokenring-ai/app/test/createTestingApp.test";
 import { ChatService } from "@tokenring-ai/chat";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import infoCommand from "../commands/template/info.ts";
