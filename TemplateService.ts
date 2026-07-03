@@ -97,7 +97,7 @@ export default class TemplateService implements TokenRingService {
 
       let lastResult: AIResponse | null = null;
 
-      for (const input of chatRequest.inputs ?? []) {
+      for (const input of chatRequest.inputs) {
         // Run the chat with the generated request
         lastResult = await runChat({ input, chatConfig, agent });
 
