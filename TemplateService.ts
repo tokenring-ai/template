@@ -1,6 +1,7 @@
 import type { Agent } from "@tokenring-ai/agent";
 import type { AIResponse } from "@tokenring-ai/ai-client/client/AIChatClient";
 import type { TokenRingService } from "@tokenring-ai/app/types";
+import { ConfigurationError } from "@tokenring-ai/app/types";
 import { ChatService } from "@tokenring-ai/chat";
 import runChat from "@tokenring-ai/chat/runChat";
 import { getChatAnalytics } from "@tokenring-ai/chat/util/getChatAnalytics";
@@ -64,7 +65,7 @@ export default class TemplateService implements TokenRingService {
     agent: Agent,
   ): Promise<TemplateResult> {
     if (!templateName) {
-      throw new Error("Template name is required");
+      throw new ConfigurationError(this.name, "Template name is required");
     }
 
     const template = this.templates.get(templateName);
@@ -118,7 +119,7 @@ export default class TemplateService implements TokenRingService {
       if (chatRequest.nextTemplate) {
         // Prevent circular references
         if (visitedTemplates.includes(chatRequest.nextTemplate)) {
-          throw new Error(`Circular template reference detected: ${chatRequest.nextTemplate} has already been run in this chain.`);
+          throw new ConfigurationError(this.name, `Circular template reference detected: ${chatRequest.nextTemplate} has already been run in this chain.`);
         }
 
         // Log that we're running the next template

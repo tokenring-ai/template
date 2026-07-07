@@ -1,5 +1,6 @@
 import type Agent from "@tokenring-ai/agent/Agent";
 import type { TokenRingToolDefinition, TokenRingToolResult } from "@tokenring-ai/chat/schema";
+import { ToolCallError } from "@tokenring-ai/chat/util/tokenRingTool";
 import { z } from "zod";
 import TemplateService from "../TemplateService.ts";
 
@@ -17,7 +18,7 @@ async function execute({ templateName, input }: z.output<typeof inputSchema>, ag
   const result = await templateRegistry.runTemplate({ templateName, input }, agent);
 
   if (!result.ok) {
-    throw new Error(result.error || "Template execution failed");
+    throw new ToolCallError(name, "Template execution failed", { cause: result.error });
   }
 
   return JSON.stringify({
