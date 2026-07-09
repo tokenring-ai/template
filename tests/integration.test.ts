@@ -36,18 +36,13 @@ describe("Template Integration Tests", () => {
   const setupMockTemplates = () => ({
     "simple-template": async (input: string) => ({
       inputs: [input],
-      nextTemplate: undefined,
-      activeTools: undefined,
     }),
     "complex-template": async (input: string) => ({
       inputs: [input, `Processed: ${input}`],
       nextTemplate: "final-template",
-      activeTools: undefined,
     }),
     "final-template": async (input: string) => ({
       inputs: [input],
-      nextTemplate: undefined,
-      activeTools: undefined,
     }),
     "error-template": async (input: string) => {
       throw new Error("Template execution error");
@@ -66,11 +61,14 @@ describe("Template Integration Tests", () => {
 
     mockChatService = new ChatService(mockApp, {
       defaultModels: [],
+      defaultTranscriptionModels: [],
       agentDefaults: {
         model: "auto",
-        autoCompact: true,
+        compaction: { policy: "automatic", compactionThreshold: 0.5, background: false, focus: "" },
         enabledTools: [],
+        hiddenTools: [],
         maxSteps: 30,
+        allowRemoteAttachments: true,
         context: {
           initial: [],
           followUp: []
@@ -153,10 +151,11 @@ describe("Template Integration Tests", () => {
     it("should integrate listTemplates tool with service", async () => {
       const result = await listTemplates.execute({}, mockAgent);
 
-      expect(result.type).toBe("json");
-      expect(result.data.templates).toContain("simple-template");
-      expect(result.data.templates).toContain("complex-template");
-      expect(result.data.templates).toContain("final-template");
+      expect(typeof result).toBe("string");
+      const templates = JSON.parse(result as string) as string[];
+      expect(templates).toContain("simple-template");
+      expect(templates).toContain("complex-template");
+      expect(templates).toContain("final-template");
     });
 
     it("should integrate runTemplate tool with service", async () => {
@@ -175,8 +174,9 @@ describe("Template Integration Tests", () => {
         input: "Tool test input",
       }, mockAgent);
 
-      expect(result.type).toBe("json");
-      expect(result.data.output).toBe("Tool test output");
+      expect(typeof result).toBe("string");
+      const payload = JSON.parse(result as string);
+      expect(payload.output).toBe("Tool test output");
     });
 
     it("should handle tool errors consistently", async () => {
@@ -211,8 +211,9 @@ describe("Template Integration Tests", () => {
       const result = await runCommand.execute({
         positionals: { templateName: "simple-template" },
         remainder: "command input",
+        args: {},
         agent: mockAgent
-      }, mockAgent);
+      });
 
       expect(result).toBe("Template executed");
       expect(runChat).toHaveBeenCalledWith({
@@ -225,8 +226,9 @@ describe("Template Integration Tests", () => {
     it("should integrate info command with the service", async () => {
       const result = await infoCommand.execute({
         positionals: { templateName: "simple-template" },
+        args: {},
         agent: mockAgent
-      }, mockAgent);
+      });
 
       expect(result).toContain("Template: simple-template");
     });
@@ -236,8 +238,9 @@ describe("Template Integration Tests", () => {
         runCommand.execute({
           positionals: { templateName: "non-existent-template" },
           remainder: "input",
+          args: {},
           agent: mockAgent
-        }, mockAgent)
+        })
       ).rejects.toThrow("Template not found: non-existent-template");
     });
   });
@@ -247,7 +250,6 @@ describe("Template Integration Tests", () => {
       const templatesWithTools = {
         "tools-test": async (input: string) => ({
           inputs: [input],
-          nextTemplate: undefined,
           activeTools: ["tool1", "tool2", "tool3"],
         }),
       };
@@ -258,11 +260,14 @@ describe("Template Integration Tests", () => {
 
       const mockChatServiceWithTools = new ChatService(testApp, {
         defaultModels: [],
+        defaultTranscriptionModels: [],
         agentDefaults: {
           model: "auto",
-          autoCompact: true,
+          compaction: { policy: "automatic", compactionThreshold: 0.5, background: false, focus: "" },
           enabledTools: ["default-tool"],
+          hiddenTools: [],
           maxSteps: 30,
+          allowRemoteAttachments: true,
           context: {
             initial: [],
             followUp: []
@@ -277,10 +282,21 @@ describe("Template Integration Tests", () => {
       // Mock the ChatService methods
       const mockEnabledTools = ["default-tool"];
       vi.spyOn(mockChatServiceWithTools, "getEnabledTools").mockReturnValue(mockEnabledTools);
-      vi.spyOn(mockChatServiceWithTools, "setEnabledTools").mockImplementation(() => {
-      });
+      vi.spyOn(mockChatServiceWithTools, "setEnabledTools").mockImplementation((_toolNames, _agent) => []);
       vi.spyOn(mockChatServiceWithTools, "getChatConfig").mockReturnValue({
-        context: { initial: [], followUp: [] }
+        model: "auto",
+        systemPrompt: "",
+        maxSteps: 30,
+        allowRemoteAttachments: true,
+        enabledTools: [],
+        hiddenTools: [],
+        compaction: {
+          policy: "automatic",
+          compactionThreshold: 0.5,
+          background: false,
+          focus: "",
+        },
+        context: { initial: [], followUp: [] },
       });
       vi.spyOn(testAgent, "infoMessage").mockImplementation(() => {
       });
@@ -370,10 +386,10 @@ describe("Template Integration Tests", () => {
 
       const results = await Promise.all(promises);
 
-      expect(results[0].ok).toBe(true);
-      expect(results[1].ok).toBe(true);
-      expect(results[0].output).toBe("Concurrent output");
-      expect(results[1].output).toBe("Concurrent output");
+      expect(results[0]!.ok).toBe(true);
+      expect(results[1]!.ok).toBe(true);
+      expect(results[0]!.output).toBe("Concurrent output");
+      expect(results[1]!.output).toBe("Concurrent output");
     });
   });
 });

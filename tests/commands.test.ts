@@ -24,29 +24,26 @@ describe("Template Commands", () => {
     templateService = new TemplateService({
       summarize: async (input) => ({
         inputs: [`/help`],
-        nextTemplate: undefined,
-        activeTools: undefined,
       }),
       analyze: async (input) => ({
         inputs: [input],
-        nextTemplate: undefined,
-        activeTools: undefined,
       }),
       generate: async (input) => ({
         inputs: [input],
-        nextTemplate: undefined,
-        activeTools: undefined,
       }),
     });
     app.addServices(templateService);
 
     chatService = new ChatService(app, {
       defaultModels: [],
+      defaultTranscriptionModels: [],
       agentDefaults: {
         model: "auto",
-        autoCompact: true,
+        compaction: { policy: "automatic", compactionThreshold: 0.5, background: false, focus: "" },
         enabledTools: [],
+        hiddenTools: [],
         maxSteps: 30,
+        allowRemoteAttachments: true,
         context: {
           initial: [],
           followUp: []
@@ -110,8 +107,9 @@ describe("Template Commands", () => {
     it("should show info for existing template", async () => {
       const result = await infoCommand.execute({
         positionals: { templateName: "summarize" },
+        args: {},
         agent
-      }, agent);
+      });
 
       expect(result).toContain("Template: summarize");
       expect(result).toContain("/template run summarize");
@@ -120,8 +118,9 @@ describe("Template Commands", () => {
     it("should handle non-existent template", async () => {
       const result = await infoCommand.execute({
         positionals: { templateName: "non-existent" },
+        args: {},
         agent
-      }, agent);
+      });
 
       expect(result).toBe("Template not found: non-existent");
     });
@@ -134,8 +133,9 @@ describe("Template Commands", () => {
       const result = await runCommand.execute({
         positionals: { templateName: "summarize" },
         remainder: "This is test input",
+        args: {},
         agent
-      }, agent);
+      });
 
       expect(templateService.runTemplate).toHaveBeenCalledWith(
         {
@@ -153,8 +153,9 @@ describe("Template Commands", () => {
       await runCommand.execute({
         positionals: { templateName: "analyze" },
         remainder: undefined,
+        args: {},
         agent
-      }, agent);
+      });
 
       expect(templateService.runTemplate).toHaveBeenCalledWith(
         {
@@ -177,8 +178,9 @@ describe("Template Commands", () => {
       await runCommand.execute({
         positionals: { templateName: "test-template" },
         remainder: "test input",
+        args: {},
         agent
-      }, agent);
+      });
 
       expect(templateService.runTemplate).toHaveBeenCalledWith(
         {
@@ -198,8 +200,9 @@ describe("Template Commands", () => {
         runCommand.execute({
           positionals: { templateName: "non-existent" },
           remainder: "input",
+          args: {},
           agent
-        }, agent)
+        })
       ).rejects.toThrow("Template not found: non-existent");
     });
   });

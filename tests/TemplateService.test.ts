@@ -9,22 +9,16 @@ describe("TemplateService", () => {
     const mockTemplates = {
       "test-template": async (input: string) => ({
         inputs: [input],
-        nextTemplate: undefined,
-        activeTools: undefined,
       }),
       "chained-template": async (input: string) => ({
         inputs: [input],
         nextTemplate: "final-template",
-        activeTools: undefined,
       }),
       "final-template": async (input: string) => ({
         inputs: [input],
-        nextTemplate: undefined,
-        activeTools: undefined,
       }),
       "tools-template": async (input: string) => ({
         inputs: [input],
-        nextTemplate: undefined,
         activeTools: ["tool1", "tool2"],
       }),
     };
@@ -57,8 +51,6 @@ describe("TemplateService", () => {
     it("should accept template functions with correct signature", () => {
       const validTemplate = async (input: string) => ({
         inputs: [input],
-        nextTemplate: undefined,
-        activeTools: undefined,
       });
 
       const testService = new TemplateService({ "valid": validTemplate });
@@ -69,7 +61,6 @@ describe("TemplateService", () => {
       const templateWithChaining = async (input: string) => ({
         inputs: [input],
         nextTemplate: "test-template",
-        activeTools: undefined,
       });
 
       const testService = new TemplateService({ "chainable": templateWithChaining });
@@ -79,7 +70,6 @@ describe("TemplateService", () => {
     it("should handle templates with activeTools", () => {
       const templateWithTools = async (input: string) => ({
         inputs: [input],
-        nextTemplate: undefined,
         activeTools: ["tool1", "tool2", "tool3"],
       });
 
