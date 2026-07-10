@@ -1,7 +1,7 @@
 {
   "name": "@tokenring-ai/template",
   "version": "0.2.0",
-  "description": "Template package for TokenRing Writer",
+  "description": "Template package for TokenRing One",
   "type": "module",
   "main": "index.ts",
   "scripts": {
