@@ -5,10 +5,10 @@
   "type": "module",
   "main": "index.ts",
   "scripts": {
-    "test": "vitest run",
+    "test": "bun test",
     "build": "tsc --noEmit",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:watch": "bun test --watch",
+    "test:coverage": "bun test --coverage"
   },
   "keywords": [
     "tokenring",
@@ -26,7 +26,6 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "vitest": "^4.1.1",
     "typescript": "^6.0.2"
   },
   "exports": {

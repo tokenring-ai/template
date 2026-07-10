@@ -1,10 +1,10 @@
-import { afterEach, beforeEach, describe, expect, it, mock, spyOn } from "bun:test";
-import type { Agent } from "@tokenring-ai/agent";
+import { Agent } from "@tokenring-ai/agent";
 import createTestingAgent from "@tokenring-ai/agent/test/createTestingAgent.test";
 import { ChatModelRegistry } from "@tokenring-ai/ai-client/ModelRegistry";
-import type TokenRingApp from "@tokenring-ai/app";
+import TokenRingApp from "@tokenring-ai/app";
 import createTestingApp from "@tokenring-ai/app/test/createTestingApp.test";
 import { ChatService } from "@tokenring-ai/chat";
+import { afterEach,beforeEach,describe,expect,it,mock,spyOn } from "bun:test";
 import infoCommand from "../commands/template/info.ts";
 import listCommand from "../commands/template/list.ts";
 import runCommand from "../commands/template/run.ts";
@@ -22,13 +22,13 @@ describe("Template Commands", () => {
     app = createTestingApp();
 
     templateService = new TemplateService({
-      summarize: async _input => ({
+      summarize: async (input) => ({
         inputs: [`/help`],
       }),
-      analyze: async input => ({
+      analyze: async (input) => ({
         inputs: [input],
       }),
-      generate: async input => ({
+      generate: async (input) => ({
         inputs: [input],
       }),
     });
@@ -46,9 +46,9 @@ describe("Template Commands", () => {
         allowRemoteAttachments: true,
         context: {
           initial: [],
-          followUp: [],
-        },
-      },
+          followUp: []
+        }
+      }
     });
     app.addServices(chatService);
     app.addServices(chatModelRegistry);
@@ -84,7 +84,7 @@ describe("Template Commands", () => {
 
   describe("List Command", () => {
     it("should list all templates when there are templates", async () => {
-      const result = listCommand.execute({ agent } as any);
+      const result = await listCommand.execute({ agent } as any);
 
       expect(result).toContain("Available templates");
       expect(result).toContain("summarize");
@@ -97,7 +97,7 @@ describe("Template Commands", () => {
       app.addServices(emptyService);
       const emptyAgent = createTestingAgent(app);
 
-      const result = listCommand.execute({ agent: emptyAgent } as any);
+      const result = await listCommand.execute({ agent: emptyAgent } as any);
 
       expect(result).toBe("No templates available.");
     });
@@ -105,10 +105,10 @@ describe("Template Commands", () => {
 
   describe("Info Command", () => {
     it("should show info for existing template", async () => {
-      const result = infoCommand.execute({
+      const result = await infoCommand.execute({
         positionals: { templateName: "summarize" },
         args: {},
-        agent,
+        agent
       });
 
       expect(result).toContain("Template: summarize");
@@ -116,10 +116,10 @@ describe("Template Commands", () => {
     });
 
     it("should handle non-existent template", async () => {
-      const result = infoCommand.execute({
+      const result = await infoCommand.execute({
         positionals: { templateName: "non-existent" },
         args: {},
-        agent,
+        agent
       });
 
       expect(result).toBe("Template not found: non-existent");
@@ -134,7 +134,7 @@ describe("Template Commands", () => {
         positionals: { templateName: "summarize" },
         remainder: "This is test input",
         args: {},
-        agent,
+        agent
       });
 
       expect(templateService.runTemplate).toHaveBeenCalledWith(
@@ -142,7 +142,7 @@ describe("Template Commands", () => {
           templateName: "summarize",
           input: "This is test input",
         },
-        agent,
+        agent
       );
       expect(result).toBe("Template executed");
     });
@@ -154,7 +154,7 @@ describe("Template Commands", () => {
         positionals: { templateName: "analyze" },
         remainder: undefined,
         args: {},
-        agent,
+        agent
       });
 
       expect(templateService.runTemplate).toHaveBeenCalledWith(
@@ -162,7 +162,7 @@ describe("Template Commands", () => {
           templateName: "analyze",
           input: "",
         },
-        agent,
+        agent
       );
     });
   });
@@ -179,7 +179,7 @@ describe("Template Commands", () => {
         positionals: { templateName: "test-template" },
         remainder: "test input",
         args: {},
-        agent,
+        agent
       });
 
       expect(templateService.runTemplate).toHaveBeenCalledWith(
@@ -187,20 +187,22 @@ describe("Template Commands", () => {
           templateName: "test-template",
           input: "test input",
         },
-        agent,
+        agent
       );
     });
 
     it("should handle template not found errors", async () => {
-      spyOn(templateService, "runTemplate").mockRejectedValue(new Error("Template not found: non-existent"));
+      spyOn(templateService, "runTemplate").mockRejectedValue(
+        new Error("Template not found: non-existent")
+      );
 
-      expect(
+      await expect(
         runCommand.execute({
           positionals: { templateName: "non-existent" },
           remainder: "input",
           args: {},
-          agent,
-        }),
+          agent
+        })
       ).rejects.toThrow("Template not found: non-existent");
     });
   });

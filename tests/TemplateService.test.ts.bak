@@ -53,7 +53,7 @@ describe("TemplateService", () => {
         inputs: [input],
       });
 
-      const testService = new TemplateService({ valid: validTemplate });
+      const testService = new TemplateService({ "valid": validTemplate });
       expect(testService.getTemplateByName("valid")).toBeDefined();
     });
 
@@ -63,7 +63,7 @@ describe("TemplateService", () => {
         nextTemplate: "test-template",
       });
 
-      const testService = new TemplateService({ chainable: templateWithChaining });
+      const testService = new TemplateService({ "chainable": templateWithChaining });
       expect(testService.getTemplateByName("chainable")).toBeDefined();
     });
 
@@ -73,7 +73,7 @@ describe("TemplateService", () => {
         activeTools: ["tool1", "tool2", "tool3"],
       });
 
-      const testService = new TemplateService({ tooled: templateWithTools });
+      const testService = new TemplateService({ "tooled": templateWithTools });
       expect(testService.getTemplateByName("tooled")).toBeDefined();
     });
   });
@@ -91,7 +91,7 @@ describe("TemplateService", () => {
         // Missing nextTemplate, activeTools
       });
 
-      const testService = new TemplateService({ invalid: invalidTemplate });
+      const testService = new TemplateService({ "invalid": invalidTemplate });
       expect(testService.getTemplateByName("invalid")).toBeDefined();
     });
   });
